@@ -1,0 +1,20 @@
+{
+  "id": "saas-granularity_trainer-l4-monthly-paid-invoice-total-2025",
+  "domain": "saas",
+  "mode": "granularity_trainer",
+  "level": 4,
+  "skills": [
+    "grain",
+    "aggregation",
+    "dates"
+  ],
+  "title": "Total paid invoice amount per month, 2025",
+  "prompt": "Finance wants total paid invoice amount per month across all accounts for 2025. Invoices start at one row each — what does a row need to represent instead?",
+  "population": "Paid invoices issued in 2025.",
+  "grain": "Starts at one row per invoice; ends at one row per month.",
+  "metricDefinition": "sum(amount) for paid invoices, grouped by month, for 2025.",
+  "transformationPlan": null,
+  "referenceSql": "SELECT date_trunc('month', issued_at) AS month, sum(amount) AS total_paid FROM invoices WHERE status = 'paid' AND issued_at >= TIMESTAMP '2025-01-01' AND issued_at < TIMESTAMP '2026-01-01' GROUP BY date_trunc('month', issued_at)",
+  "commonWrongAnswers": [],
+  "admittedAt": "2026-09-15T02:12:00.020Z"
+}

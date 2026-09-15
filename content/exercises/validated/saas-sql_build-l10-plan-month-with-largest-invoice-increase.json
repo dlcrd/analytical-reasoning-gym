@@ -1,0 +1,22 @@
+{
+  "id": "saas-sql_build-l10-plan-month-with-largest-invoice-increase",
+  "domain": "saas",
+  "mode": "sql_build",
+  "level": 10,
+  "skills": [
+    "window_function",
+    "lag_lead",
+    "ranking",
+    "ctes",
+    "multi_grain"
+  ],
+  "title": "Plan's best month for invoice growth in 2025",
+  "prompt": "For each plan, which 2025 month had the largest month-over-month increase in number of invoices issued?",
+  "population": "Invoices issued from Dec 2024 through 2025 (the prior month is needed for the January comparison), joined through subscriptions to their plan.",
+  "grain": "One row per plan (its single best month).",
+  "metricDefinition": "month-over-month change in invoice count, per plan; the month with the largest positive change, restricted to 2025.",
+  "transformationPlan": null,
+  "referenceSql": "WITH plan_month AS (SELECT s.plan_id, date_trunc('month', i.issued_at) AS month, count(*) AS invoice_count FROM invoices i JOIN subscriptions s ON s.subscription_id = i.subscription_id WHERE i.issued_at >= TIMESTAMP '2024-12-01' AND i.issued_at < TIMESTAMP '2026-01-01' GROUP BY s.plan_id, date_trunc('month', i.issued_at)), with_change AS (SELECT plan_id, month, invoice_count, invoice_count - lag(invoice_count) OVER (PARTITION BY plan_id ORDER BY month) AS mom_change FROM plan_month), ranked AS (SELECT plan_id, month, invoice_count, mom_change, row_number() OVER (PARTITION BY plan_id ORDER BY mom_change DESC NULLS LAST) AS rn FROM with_change) SELECT plan_id, month, invoice_count, mom_change FROM ranked WHERE rn = 1 AND month >= DATE '2025-01-01' ORDER BY plan_id",
+  "commonWrongAnswers": [],
+  "admittedAt": "2026-09-15T02:01:58.828Z"
+}

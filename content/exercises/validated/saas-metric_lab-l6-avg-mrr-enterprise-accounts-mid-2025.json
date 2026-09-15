@@ -1,0 +1,20 @@
+{
+  "id": "saas-metric_lab-l6-avg-mrr-enterprise-accounts-mid-2025",
+  "domain": "saas",
+  "mode": "metric_lab",
+  "level": 6,
+  "skills": [
+    "joins",
+    "aggregation",
+    "filtering"
+  ],
+  "title": "Average MRR per enterprise-segment account, as of 2025-08-31",
+  "prompt": "Among enterprise-segment accounts with a subscription active on 2025-08-31, what's the average monthly recurring revenue (their plan's monthly_price) per account?",
+  "population": "Enterprise-segment accounts with a subscription active on 2025-08-31, joined to that subscription's plan.",
+  "grain": "One row, a single average.",
+  "metricDefinition": "average(monthly_price) of the subscription active on 2025-08-31, across enterprise accounts that have one.",
+  "transformationPlan": null,
+  "referenceSql": "SELECT avg(p.monthly_price) AS avg_mrr_per_account FROM accounts a JOIN subscriptions s ON s.account_id = a.account_id JOIN plans p ON p.plan_id = s.plan_id WHERE a.segment = 'enterprise' AND s.started_at <= TIMESTAMP '2025-08-31' AND (s.ended_at IS NULL OR s.ended_at > TIMESTAMP '2025-08-31')",
+  "commonWrongAnswers": [],
+  "admittedAt": "2026-09-15T02:12:00.019Z"
+}

@@ -1,0 +1,179 @@
+{
+  "domain": "fintech",
+  "tables": [
+    {
+      "name": "customers",
+      "columns": [
+        "customer_id",
+        "joined_at",
+        "region",
+        "risk_segment"
+      ],
+      "rowCount": 250,
+      "sampleRows": [
+        [
+          "1",
+          "DATE '2022-03-14'",
+          "'west'",
+          "'medium'"
+        ],
+        [
+          "2",
+          "DATE '2021-12-10'",
+          "'south'",
+          "'low'"
+        ],
+        [
+          "3",
+          "DATE '2025-01-12'",
+          "'north'",
+          "'medium'"
+        ]
+      ]
+    },
+    {
+      "name": "accounts",
+      "columns": [
+        "account_id",
+        "customer_id",
+        "account_type",
+        "opened_at",
+        "status"
+      ],
+      "rowCount": 380,
+      "sampleRows": [
+        [
+          "1",
+          "1",
+          "'savings'",
+          "DATE '2022-04-23'",
+          "'active'"
+        ],
+        [
+          "2",
+          "2",
+          "'checking'",
+          "DATE '2021-12-30'",
+          "'active'"
+        ],
+        [
+          "3",
+          "2",
+          "'credit'",
+          "DATE '2022-01-13'",
+          "'active'"
+        ]
+      ]
+    },
+    {
+      "name": "transactions",
+      "columns": [
+        "transaction_id",
+        "account_id",
+        "occurred_at",
+        "amount",
+        "type",
+        "category"
+      ],
+      "rowCount": 12141,
+      "sampleRows": [
+        [
+          "1",
+          "1",
+          "TIMESTAMP '2024-10-31 09:47:42'",
+          "504.73",
+          "'credit'",
+          "'entertainment'"
+        ],
+        [
+          "2",
+          "1",
+          "TIMESTAMP '2025-01-09 18:51:02'",
+          "509.09",
+          "'credit'",
+          "'utilities'"
+        ],
+        [
+          "3",
+          "1",
+          "TIMESTAMP '2022-08-16 08:27:13'",
+          "2625.85",
+          "'credit'",
+          "'entertainment'"
+        ]
+      ]
+    },
+    {
+      "name": "loans",
+      "columns": [
+        "loan_id",
+        "customer_id",
+        "originated_at",
+        "principal",
+        "interest_rate",
+        "status"
+      ],
+      "rowCount": 91,
+      "sampleRows": [
+        [
+          "1",
+          "5",
+          "DATE '2021-09-17'",
+          "31835.86",
+          "0.0766",
+          "'current'"
+        ],
+        [
+          "2",
+          "6",
+          "DATE '2024-12-08'",
+          "11696.43",
+          "0.1754",
+          "'current'"
+        ],
+        [
+          "3",
+          "7",
+          "DATE '2024-07-10'",
+          "16971.08",
+          "0.0331",
+          "'current'"
+        ]
+      ]
+    },
+    {
+      "name": "loan_payments",
+      "columns": [
+        "payment_id",
+        "loan_id",
+        "paid_at",
+        "amount",
+        "status"
+      ],
+      "rowCount": 1286,
+      "sampleRows": [
+        [
+          "1",
+          "1",
+          "TIMESTAMP '2021-09-29 02:46:51'",
+          "1326.49",
+          "'on_time'"
+        ],
+        [
+          "2",
+          "1",
+          "TIMESTAMP '2021-11-12 17:58:51'",
+          "1326.49",
+          "'on_time'"
+        ],
+        [
+          "3",
+          "1",
+          "TIMESTAMP '2021-09-25 22:16:09'",
+          "1326.49",
+          "'on_time'"
+        ]
+      ]
+    }
+  ]
+}

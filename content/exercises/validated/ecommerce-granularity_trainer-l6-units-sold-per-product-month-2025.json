@@ -1,0 +1,20 @@
+{
+  "id": "ecommerce-granularity_trainer-l6-units-sold-per-product-month-2025",
+  "domain": "ecommerce",
+  "mode": "granularity_trainer",
+  "level": 6,
+  "skills": [
+    "grain",
+    "aggregation",
+    "dates"
+  ],
+  "title": "Units sold per product per month, 2025",
+  "prompt": "Inventory planning wants units sold per product per month for 2025. Order_items start at one row per line item — what does a row need to represent once you've built what inventory asked for?",
+  "population": "Order_items on completed orders placed in 2025.",
+  "grain": "Starts at one row per order item; ends at one row per product per month.",
+  "metricDefinition": "sum(quantity) per product per month, for completed orders in 2025.",
+  "transformationPlan": null,
+  "referenceSql": "SELECT oi.product_id, date_trunc('month', o.order_date) AS month, sum(oi.quantity) AS units_sold FROM orders o JOIN order_items oi ON oi.order_id = o.order_id WHERE o.status = 'completed' AND o.order_date >= DATE '2025-01-01' GROUP BY oi.product_id, date_trunc('month', o.order_date)",
+  "commonWrongAnswers": [],
+  "admittedAt": "2026-09-15T02:11:59.618Z"
+}

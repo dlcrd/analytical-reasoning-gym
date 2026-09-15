@@ -1,0 +1,26 @@
+{
+  "id": "fintech-metric_lab-l7-at-risk-current-loans-2024-cohort",
+  "domain": "fintech",
+  "mode": "metric_lab",
+  "level": 7,
+  "skills": [
+    "ctes",
+    "joins",
+    "denominator",
+    "dates"
+  ],
+  "title": "At-risk share of the 2024 loan cohort",
+  "prompt": "Of loans originated in 2024, what fraction are still 'current' status but already have 2 or more late-or-missed payments — a leading risk indicator before default?",
+  "population": "Loans originated in 2024, joined to their loan_payments.",
+  "grain": "One row, a single rate.",
+  "metricDefinition": "loans originated in 2024 with status = current AND ≥2 late/missed payments, divided by all loans originated in 2024.",
+  "transformationPlan": [
+    "count late/missed payments per loan",
+    "filter to loans originated in 2024",
+    "flag as at-risk if status is current and issue_count ≥ 2",
+    "compute the rate against all 2024-originated loans"
+  ],
+  "referenceSql": "WITH payment_issues AS (SELECT loan_id, count(*) FILTER (WHERE status IN ('late', 'missed')) AS issue_count FROM loan_payments GROUP BY loan_id) SELECT count(*) FILTER (WHERE l.status = 'current' AND coalesce(pi.issue_count, 0) >= 2)::DOUBLE / count(*) AS at_risk_rate FROM loans l LEFT JOIN payment_issues pi ON pi.loan_id = l.loan_id WHERE l.originated_at >= DATE '2024-01-01' AND l.originated_at < DATE '2025-01-01'",
+  "commonWrongAnswers": [],
+  "admittedAt": "2026-09-15T02:11:59.829Z"
+}

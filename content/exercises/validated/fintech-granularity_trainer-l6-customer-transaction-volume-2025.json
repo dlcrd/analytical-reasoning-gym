@@ -1,0 +1,26 @@
+{
+  "id": "fintech-granularity_trainer-l6-customer-transaction-volume-2025",
+  "domain": "fintech",
+  "mode": "granularity_trainer",
+  "level": 6,
+  "skills": [
+    "grain",
+    "multi_grain",
+    "joins",
+    "aggregation"
+  ],
+  "title": "Total transaction volume per customer, 2025",
+  "prompt": "Now roll it up one more level: for each customer (who may hold 2 or 3 accounts), what's their total transaction volume across all their accounts in 2025?",
+  "population": "Transactions in 2025, joined through accounts to customers.",
+  "grain": "Starts at one row per transaction → one row per account → ends at one row per customer.",
+  "metricDefinition": "sum(amount) per customer, for 2025, across all of that customer's accounts.",
+  "transformationPlan": null,
+  "referenceSql": "SELECT a.customer_id, sum(t.amount) AS total_amount FROM transactions t JOIN accounts a ON a.account_id = t.account_id WHERE t.occurred_at >= TIMESTAMP '2025-01-01' AND t.occurred_at < TIMESTAMP '2026-01-01' GROUP BY a.customer_id",
+  "commonWrongAnswers": [
+    {
+      "sql": "SELECT account_id, sum(amount) AS total_amount FROM transactions WHERE occurred_at >= TIMESTAMP '2025-01-01' AND occurred_at < TIMESTAMP '2026-01-01' GROUP BY account_id",
+      "whyWrong": "Stays at account grain — a customer with 3 accounts gets 3 separate rows instead of one combined total, which isn't what was asked."
+    }
+  ],
+  "admittedAt": "2026-09-15T02:01:58.617Z"
+}

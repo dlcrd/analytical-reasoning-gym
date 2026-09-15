@@ -1,0 +1,20 @@
+{
+  "id": "saas-sql_build-l9-avg-days-between-invoices",
+  "domain": "saas",
+  "mode": "sql_build",
+  "level": 9,
+  "skills": [
+    "window_function",
+    "lag_lead",
+    "aggregation"
+  ],
+  "title": "Average days between consecutive invoices, per account",
+  "prompt": "For accounts with at least 3 invoices, what's the average number of days between consecutive invoices?",
+  "population": "Invoices, restricted at the end to accounts with at least 2 gaps between consecutive invoices (i.e., ≥3 invoices).",
+  "grain": "One row per qualifying account.",
+  "metricDefinition": "average of date_diff('day', previous invoice's issued_at, this invoice's issued_at), per account, for accounts with ≥3 invoices.",
+  "transformationPlan": null,
+  "referenceSql": "WITH gaps AS (SELECT account_id, issued_at, date_diff('day', lag(issued_at) OVER (PARTITION BY account_id ORDER BY issued_at), issued_at) AS days_since_prev FROM invoices) SELECT account_id, avg(days_since_prev) AS avg_days_between_invoices FROM gaps WHERE days_since_prev IS NOT NULL GROUP BY account_id HAVING count(*) >= 2",
+  "commonWrongAnswers": [],
+  "admittedAt": "2026-09-15T02:12:00.022Z"
+}

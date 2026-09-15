@@ -1,0 +1,3 @@
+# Session is a persisted entity, not an ephemeral UI grouping
+
+Attempts are grouped into a persisted Session record rather than each Attempt standing alone with just a mode/timestamp. This is needed for the Placement Test, which is a single Session spanning all 4 Modes whose Attempts set initial per-Mode levels directly (see CONTEXT.md). A future reader might expect "session" to be a purely client-side/UI notion (per the PRD's ad hoc "sessão do dia sugerida" dashboard copy) with only individual Attempts persisted — that's a real alternative we considered and rejected, since it would leave nowhere to anchor the Placement Test's Mode-spanning batch of Attempts.

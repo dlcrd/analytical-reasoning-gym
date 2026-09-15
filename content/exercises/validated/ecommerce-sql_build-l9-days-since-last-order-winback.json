@@ -1,0 +1,25 @@
+{
+  "id": "ecommerce-sql_build-l9-days-since-last-order-winback",
+  "domain": "ecommerce",
+  "mode": "sql_build",
+  "level": 9,
+  "skills": [
+    "window_function",
+    "ranking",
+    "dates"
+  ],
+  "title": "Days since last completed order, per customer",
+  "prompt": "As of 2025-08-31, for each customer with at least one completed order, how many days has it been since their most recent completed order? This feeds a win-back campaign list.",
+  "population": "Completed orders, restricted to each customer's single most recent one.",
+  "grain": "One row per customer.",
+  "metricDefinition": "days since most recent completed order, per customer, as of 2025-08-31.",
+  "transformationPlan": null,
+  "referenceSql": "WITH ranked AS (SELECT customer_id, order_date, row_number() OVER (PARTITION BY customer_id ORDER BY order_date DESC) AS rn FROM orders WHERE status = 'completed') SELECT customer_id, order_date AS most_recent_order_date, DATE '2025-08-31' - order_date AS days_since_order FROM ranked WHERE rn = 1 ORDER BY days_since_order DESC",
+  "commonWrongAnswers": [
+    {
+      "sql": "SELECT customer_id, max(order_date) AS most_recent_order_date FROM orders WHERE status = 'completed' GROUP BY customer_id",
+      "whyWrong": "Gets the right date but not the days-since figure, and can't safely pull other columns from that specific order (like order_id) without a window function or self-join."
+    }
+  ],
+  "admittedAt": "2026-09-15T02:01:58.436Z"
+}

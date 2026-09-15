@@ -1,0 +1,28 @@
+{
+  "id": "ecommerce-query_architecture-l4-never-ordered-electronics",
+  "domain": "ecommerce",
+  "mode": "query_architecture",
+  "level": 4,
+  "skills": [
+    "filtering",
+    "subqueries"
+  ],
+  "title": "Electronics products that have never been ordered",
+  "prompt": "How many products in the electronics category have never appeared in a single order?",
+  "population": "Electronics-category products, checked against order_items.",
+  "grain": "One row, a single count.",
+  "metricDefinition": "count of electronics products with zero order_items.",
+  "transformationPlan": [
+    "find electronics-category products",
+    "find which products appear in order_items",
+    "count electronics products absent from that set"
+  ],
+  "referenceSql": "SELECT count(*) FROM products p WHERE p.category = 'electronics' AND NOT EXISTS (SELECT 1 FROM order_items oi WHERE oi.product_id = p.product_id)",
+  "commonWrongAnswers": [
+    {
+      "sql": "SELECT count(*) FROM products p LEFT JOIN order_items oi ON oi.product_id = p.product_id WHERE p.category = 'electronics'",
+      "whyWrong": "Forgets to filter to unmatched rows (oi.order_item_id IS NULL) — without that, this just counts every electronics product, ordered or not."
+    }
+  ],
+  "admittedAt": "2026-09-15T02:11:59.618Z"
+}

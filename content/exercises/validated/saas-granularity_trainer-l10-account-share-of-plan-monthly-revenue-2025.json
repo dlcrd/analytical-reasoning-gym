@@ -1,0 +1,26 @@
+{
+  "id": "saas-granularity_trainer-l10-account-share-of-plan-monthly-revenue-2025",
+  "domain": "saas",
+  "mode": "granularity_trainer",
+  "level": 10,
+  "skills": [
+    "multi_grain",
+    "ctes",
+    "aggregation",
+    "denominator",
+    "joins"
+  ],
+  "title": "Account's share of its own plan's monthly revenue, 2025",
+  "prompt": "For each account, what share of its plan's total monthly paid revenue did that single account represent, month by month in 2025? You'll need an account × month grain and a plan × month grain before you can compute a share.",
+  "population": "Paid invoices issued in 2025, joined through subscriptions to plans.",
+  "grain": "invoice → account × month (with its plan) → plan × month total → final: account × month with share-of-plan-month.",
+  "metricDefinition": "account_month_revenue / plan_month_revenue (that account's plan, same month), for 2025.",
+  "transformationPlan": [
+    "aggregate paid invoices to account × month revenue, keeping the plan_id from that account's subscription",
+    "aggregate account × month revenue up to plan × month totals",
+    "join account totals to plan totals by plan and month, then divide"
+  ],
+  "referenceSql": "WITH account_month AS (SELECT i.account_id, s.plan_id, date_trunc('month', i.issued_at) AS month, sum(i.amount) AS revenue FROM invoices i JOIN subscriptions s ON s.subscription_id = i.subscription_id WHERE i.status = 'paid' AND i.issued_at >= TIMESTAMP '2025-01-01' AND i.issued_at < TIMESTAMP '2026-01-01' GROUP BY i.account_id, s.plan_id, date_trunc('month', i.issued_at)), plan_month AS (SELECT plan_id, month, sum(revenue) AS plan_total FROM account_month GROUP BY plan_id, month) SELECT am.account_id, am.plan_id, am.month, am.revenue, pm.plan_total, am.revenue / pm.plan_total AS share_of_plan_month FROM account_month am JOIN plan_month pm ON pm.plan_id = am.plan_id AND pm.month = am.month ORDER BY am.plan_id, am.month, am.account_id",
+  "commonWrongAnswers": [],
+  "admittedAt": "2026-09-15T02:12:00.021Z"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "saas-sql_build-l7-cumulative-signups-2025",
+  "domain": "saas",
+  "mode": "sql_build",
+  "level": 7,
+  "skills": [
+    "window_function",
+    "running_totals",
+    "aggregation",
+    "dates"
+  ],
+  "title": "Cumulative account signups, 2025",
+  "prompt": "Show cumulative account signups by month for 2025 — a running total finance can chart.",
+  "population": "Accounts with signed_up_at in 2025.",
+  "grain": "One row per month.",
+  "metricDefinition": "cumulative count of accounts signed up, by month, through 2025.",
+  "transformationPlan": null,
+  "referenceSql": "WITH monthly AS (SELECT date_trunc('month', signed_up_at) AS month, count(*) AS new_accounts FROM accounts WHERE signed_up_at >= DATE '2025-01-01' AND signed_up_at < DATE '2026-01-01' GROUP BY date_trunc('month', signed_up_at)) SELECT month, new_accounts, sum(new_accounts) OVER (ORDER BY month) AS cumulative_accounts FROM monthly ORDER BY month",
+  "commonWrongAnswers": [],
+  "admittedAt": "2026-09-15T02:01:58.827Z"
+}

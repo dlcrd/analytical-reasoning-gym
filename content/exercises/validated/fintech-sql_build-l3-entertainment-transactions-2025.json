@@ -1,0 +1,19 @@
+{
+  "id": "fintech-sql_build-l3-entertainment-transactions-2025",
+  "domain": "fintech",
+  "mode": "sql_build",
+  "level": 3,
+  "skills": [
+    "filtering",
+    "dates"
+  ],
+  "title": "Entertainment transactions in 2025",
+  "prompt": "How many transactions in the 'entertainment' category occurred in 2025?",
+  "population": "Transactions with category = entertainment, occurred_at in 2025.",
+  "grain": "One row, a single count.",
+  "metricDefinition": null,
+  "transformationPlan": null,
+  "referenceSql": "SELECT count(*) FROM transactions WHERE category = 'entertainment' AND occurred_at >= TIMESTAMP '2025-01-01' AND occurred_at < TIMESTAMP '2026-01-01'",
+  "commonWrongAnswers": [],
+  "admittedAt": "2026-09-15T02:11:59.830Z"
+}

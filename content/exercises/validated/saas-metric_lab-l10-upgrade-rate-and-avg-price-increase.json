@@ -1,0 +1,28 @@
+{
+  "id": "saas-metric_lab-l10-upgrade-rate-and-avg-price-increase",
+  "domain": "saas",
+  "mode": "metric_lab",
+  "level": 10,
+  "skills": [
+    "window_function",
+    "ranking",
+    "joins",
+    "multi_grain",
+    "denominator"
+  ],
+  "title": "Upgrade rate and average price increase among accounts with 2 subscriptions",
+  "prompt": "Among accounts that have had exactly two subscriptions (they changed plans once), what fraction upgraded to a higher-priced plan the second time, and what's the average price increase for those who did?",
+  "population": "Accounts with exactly two subscriptions, comparing the first (by started_at) to the second.",
+  "grain": "Two metrics, each a single row: the upgrade rate, and the average price increase among upgraders.",
+  "metricDefinition": "(a) share of two-subscription accounts where the second plan's monthly_price exceeds the first's; (b) among those, average(second price − first price).",
+  "transformationPlan": [
+    "rank each account's subscriptions by started_at",
+    "take the 1st and 2nd subscription per account",
+    "join each to its plan's monthly_price",
+    "compare 2nd price to 1st price to classify upgrade vs. not",
+    "compute the upgrade rate and the average price increase among upgraders"
+  ],
+  "referenceSql": "WITH ranked AS (SELECT s.account_id, s.plan_id, s.started_at, row_number() OVER (PARTITION BY s.account_id ORDER BY s.started_at) AS rn FROM subscriptions s), pivoted AS (SELECT r1.account_id, p1.monthly_price AS first_price, p2.monthly_price AS second_price FROM ranked r1 JOIN ranked r2 ON r2.account_id = r1.account_id AND r2.rn = 2 JOIN plans p1 ON p1.plan_id = r1.plan_id JOIN plans p2 ON p2.plan_id = r2.plan_id WHERE r1.rn = 1) SELECT count(*) FILTER (WHERE second_price > first_price)::DOUBLE / count(*) AS upgrade_rate, avg(second_price - first_price) FILTER (WHERE second_price > first_price) AS avg_price_increase_among_upgraders FROM pivoted",
+  "commonWrongAnswers": [],
+  "admittedAt": "2026-09-15T02:01:58.826Z"
+}

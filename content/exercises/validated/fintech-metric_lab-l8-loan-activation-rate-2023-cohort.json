@@ -1,0 +1,26 @@
+{
+  "id": "fintech-metric_lab-l8-loan-activation-rate-2023-cohort",
+  "domain": "fintech",
+  "mode": "metric_lab",
+  "level": 8,
+  "skills": [
+    "population",
+    "denominator",
+    "dates",
+    "subqueries"
+  ],
+  "title": "180-day loan activation rate, 2023 cohort",
+  "prompt": "Of customers who joined in 2023, what fraction opened a loan within 180 days of joining?",
+  "population": "Customers with joined_at in 2023.",
+  "grain": "One row, a single rate.",
+  "metricDefinition": "customers (joined in 2023) with a loan originated within 180 days of joined_at, divided by all customers who joined in 2023.",
+  "transformationPlan": [
+    "filter to customers who joined in 2023",
+    "for each, check whether they have a loan originated within 180 days of joining",
+    "count qualifying customers",
+    "divide by total 2023 joiners"
+  ],
+  "referenceSql": "SELECT count(DISTINCT c.customer_id) FILTER (WHERE EXISTS (SELECT 1 FROM loans l WHERE l.customer_id = c.customer_id AND l.originated_at >= c.joined_at AND l.originated_at < c.joined_at + INTERVAL '180 days'))::DOUBLE / count(DISTINCT c.customer_id) AS loan_activation_rate FROM customers c WHERE c.joined_at >= DATE '2023-01-01' AND c.joined_at < DATE '2024-01-01'",
+  "commonWrongAnswers": [],
+  "admittedAt": "2026-09-15T02:01:58.616Z"
+}

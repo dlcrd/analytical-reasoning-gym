@@ -1,0 +1,29 @@
+{
+  "id": "saas-query_architecture-l6-active-mrr-by-plan-mid-2025",
+  "domain": "saas",
+  "mode": "query_architecture",
+  "level": 6,
+  "skills": [
+    "joins",
+    "aggregation",
+    "filtering"
+  ],
+  "title": "Active MRR by plan, as of 2025-06-30",
+  "prompt": "What's the monthly recurring revenue (MRR) by plan, counting only subscriptions active as of 2025-06-30?",
+  "population": "Subscriptions active on 2025-06-30 (started on or before that date, not yet ended), joined to plans.",
+  "grain": "One row per plan.",
+  "metricDefinition": "sum(monthly_price) from subscriptions active as of 2025-06-30, grouped by plan.",
+  "transformationPlan": [
+    "find subscriptions active as of 2025-06-30",
+    "join to plans for monthly_price",
+    "sum monthly_price grouped by plan"
+  ],
+  "referenceSql": "SELECT p.name, sum(p.monthly_price) AS mrr FROM subscriptions s JOIN plans p ON p.plan_id = s.plan_id WHERE s.started_at <= TIMESTAMP '2025-06-30' AND (s.ended_at IS NULL OR s.ended_at > TIMESTAMP '2025-06-30') GROUP BY p.name",
+  "commonWrongAnswers": [
+    {
+      "sql": "SELECT p.name, sum(p.monthly_price) AS mrr FROM subscriptions s JOIN plans p ON p.plan_id = s.plan_id WHERE s.status = 'active' GROUP BY p.name",
+      "whyWrong": "Uses the subscription's current status instead of whether it was active on the specific date being asked about — this answers 'MRR right now', not 'MRR as of 2025-06-30'."
+    }
+  ],
+  "admittedAt": "2026-09-15T02:01:58.827Z"
+}

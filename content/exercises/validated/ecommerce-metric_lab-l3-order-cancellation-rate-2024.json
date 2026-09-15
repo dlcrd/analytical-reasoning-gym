@@ -1,0 +1,25 @@
+{
+  "id": "ecommerce-metric_lab-l3-order-cancellation-rate-2024",
+  "domain": "ecommerce",
+  "mode": "metric_lab",
+  "level": 3,
+  "skills": [
+    "metric_definition",
+    "denominator",
+    "dates"
+  ],
+  "title": "Order cancellation rate in 2024",
+  "prompt": "Ops wants to know: what share of orders placed in 2024 ended up cancelled?",
+  "population": "Orders placed in 2024 (order_date in [2024-01-01, 2025-01-01)).",
+  "grain": "One row, a single rate.",
+  "metricDefinition": "cancelled orders / total orders, for orders placed in 2024.",
+  "transformationPlan": null,
+  "referenceSql": "SELECT count(*) FILTER (WHERE status = 'cancelled')::DOUBLE / count(*) AS cancellation_rate FROM orders WHERE order_date >= DATE '2024-01-01' AND order_date < DATE '2025-01-01'",
+  "commonWrongAnswers": [
+    {
+      "sql": "SELECT count(*) FROM orders WHERE status = 'cancelled' AND order_date >= DATE '2024-01-01' AND order_date < DATE '2025-01-01'",
+      "whyWrong": "Returns the cancelled count, not the rate — without dividing by all 2024 orders you can't tell if that's a lot or a little."
+    }
+  ],
+  "admittedAt": "2026-09-15T02:01:58.433Z"
+}

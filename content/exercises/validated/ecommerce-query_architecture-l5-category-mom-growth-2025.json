@@ -1,0 +1,31 @@
+{
+  "id": "ecommerce-query_architecture-l5-category-mom-growth-2025",
+  "domain": "ecommerce",
+  "mode": "query_architecture",
+  "level": 5,
+  "skills": [
+    "window_function",
+    "lag_lead",
+    "multi_grain",
+    "aggregation"
+  ],
+  "title": "Categories with >20% month-over-month growth in 2025",
+  "prompt": "Which product categories had month-over-month revenue growth greater than 20% in any month of 2025?",
+  "population": "Completed orders from Dec 2024 through Aug 2025 (the prior month is needed to compute January 2025's growth), joined to order_items and products.",
+  "grain": "One row per product category per month, for 2025 months only, in the final result.",
+  "metricDefinition": "month-over-month revenue growth rate = (this month's category revenue − previous month's) / previous month's revenue, filtered to > 20%.",
+  "transformationPlan": [
+    "aggregate order_items to category × month revenue (include Dec 2024 for the January comparison)",
+    "order by month within each category and get the previous month's revenue via LAG",
+    "calculate month-over-month growth",
+    "filter to 2025 months where growth exceeds 20%"
+  ],
+  "referenceSql": "WITH category_month AS (SELECT p.category, date_trunc('month', o.order_date) AS month, sum(oi.quantity * oi.unit_price * (1 - oi.discount)) AS revenue FROM orders o JOIN order_items oi ON oi.order_id = o.order_id JOIN products p ON p.product_id = oi.product_id WHERE o.status = 'completed' AND o.order_date >= DATE '2024-12-01' GROUP BY p.category, date_trunc('month', o.order_date)), with_growth AS (SELECT category, month, revenue, lag(revenue) OVER (PARTITION BY category ORDER BY month) AS prev_revenue FROM category_month) SELECT category, month, revenue, prev_revenue, (revenue - prev_revenue) / prev_revenue AS growth_rate FROM with_growth WHERE month >= DATE '2025-01-01' AND (revenue - prev_revenue) / prev_revenue > 0.20 ORDER BY category, month",
+  "commonWrongAnswers": [
+    {
+      "sql": "WITH category_month AS (SELECT p.category, date_trunc('month', o.order_date) AS month, sum(oi.quantity * oi.unit_price * (1 - oi.discount)) AS revenue FROM orders o JOIN order_items oi ON oi.order_id = o.order_id JOIN products p ON p.product_id = oi.product_id WHERE o.status = 'completed' AND o.order_date >= DATE '2025-01-01' GROUP BY p.category, date_trunc('month', o.order_date)) SELECT category, month, revenue, lag(revenue) OVER (PARTITION BY category ORDER BY month) AS prev_revenue FROM category_month",
+      "whyWrong": "Excludes December 2024, so January 2025's LAG has no previous value to compare against — the first real month of growth silently drops out."
+    }
+  ],
+  "admittedAt": "2026-09-15T02:01:58.436Z"
+}

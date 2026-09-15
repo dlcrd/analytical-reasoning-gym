@@ -1,0 +1,25 @@
+{
+  "id": "ecommerce-sql_build-l6-avg-order-value-by-segment",
+  "domain": "ecommerce",
+  "mode": "sql_build",
+  "level": 6,
+  "skills": [
+    "joins",
+    "aggregation",
+    "subqueries"
+  ],
+  "title": "Average order value by customer segment",
+  "prompt": "Are wholesale customers placing bigger orders than retail customers, on average? Compare average order value (after discounts) by customer segment.",
+  "population": "All orders with at least one order item, joined to their customer's segment.",
+  "grain": "One row per customer segment.",
+  "metricDefinition": "average, per order, of sum(quantity * unit_price * (1 - discount)) across its order_items, grouped by customer segment.",
+  "transformationPlan": null,
+  "referenceSql": "SELECT c.segment, avg(order_totals.total) AS avg_order_value FROM customers c JOIN orders o ON o.customer_id = c.customer_id JOIN (SELECT order_id, sum(quantity * unit_price * (1 - discount)) AS total FROM order_items GROUP BY order_id) order_totals ON order_totals.order_id = o.order_id GROUP BY c.segment",
+  "commonWrongAnswers": [
+    {
+      "sql": "SELECT c.segment, avg(oi.unit_price) FROM customers c JOIN orders o ON o.customer_id = c.customer_id JOIN order_items oi ON oi.order_id = o.order_id GROUP BY c.segment",
+      "whyWrong": "Averages line-item unit price directly, ignoring quantity and discount and mixing the order_items grain into a per-order metric — a classic grain mistake."
+    }
+  ],
+  "admittedAt": "2026-09-15T01:43:58.100Z"
+}

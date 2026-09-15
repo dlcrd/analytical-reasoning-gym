@@ -1,0 +1,29 @@
+{
+  "id": "fintech-query_architecture-l4-customers-with-checking-and-savings",
+  "domain": "fintech",
+  "mode": "query_architecture",
+  "level": 4,
+  "skills": [
+    "joins",
+    "subqueries",
+    "filtering"
+  ],
+  "title": "Customers with both a checking and a savings account",
+  "prompt": "How many customers hold both a checking account and a savings account?",
+  "population": "Customers, checked against their set of account_types.",
+  "grain": "One row, a single count.",
+  "metricDefinition": "count of customers holding both a checking and a savings account.",
+  "transformationPlan": [
+    "find customers with a checking account",
+    "find customers with a savings account",
+    "count customers present in both sets"
+  ],
+  "referenceSql": "SELECT count(*) FROM (SELECT DISTINCT customer_id FROM accounts WHERE account_type = 'checking') c JOIN (SELECT DISTINCT customer_id FROM accounts WHERE account_type = 'savings') s ON s.customer_id = c.customer_id",
+  "commonWrongAnswers": [
+    {
+      "sql": "SELECT count(DISTINCT customer_id) FROM accounts WHERE account_type IN ('checking', 'savings')",
+      "whyWrong": "Counts customers with EITHER a checking OR a savings account, not customers who hold both — the IN clause doesn't require both types to be present."
+    }
+  ],
+  "admittedAt": "2026-09-15T02:01:58.617Z"
+}

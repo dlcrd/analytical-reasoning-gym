@@ -1,0 +1,25 @@
+{
+  "id": "fintech-granularity_trainer-l9-customer-month-share-of-year-2025",
+  "domain": "fintech",
+  "mode": "granularity_trainer",
+  "level": 9,
+  "skills": [
+    "multi_grain",
+    "ctes",
+    "aggregation",
+    "denominator"
+  ],
+  "title": "Customer's monthly share of their own 2025 total",
+  "prompt": "For each customer, what share of their full-year 2025 transaction volume happened in each month? You'll need both a customer × month grain and a customer × year grain before you can compute a share.",
+  "population": "Transactions in 2025, joined through accounts to customers.",
+  "grain": "transaction → account + customer × month → customer × year total → final: customer × month with share-of-own-year.",
+  "metricDefinition": "(customer × month transaction total) / (that same customer's 2025 full-year total).",
+  "transformationPlan": [
+    "aggregate transactions to customer × month totals (via accounts)",
+    "aggregate customer × month totals up to customer × year totals",
+    "join month totals to year totals by customer and divide"
+  ],
+  "referenceSql": "WITH customer_month AS (SELECT a.customer_id, date_trunc('month', t.occurred_at) AS month, sum(t.amount) AS month_total FROM transactions t JOIN accounts a ON a.account_id = t.account_id WHERE t.occurred_at >= TIMESTAMP '2025-01-01' AND t.occurred_at < TIMESTAMP '2026-01-01' GROUP BY a.customer_id, date_trunc('month', t.occurred_at)), customer_year AS (SELECT customer_id, sum(month_total) AS year_total FROM customer_month GROUP BY customer_id) SELECT cm.customer_id, cm.month, cm.month_total, cy.year_total, cm.month_total / cy.year_total AS share_of_year FROM customer_month cm JOIN customer_year cy ON cy.customer_id = cm.customer_id ORDER BY cm.customer_id, cm.month",
+  "commonWrongAnswers": [],
+  "admittedAt": "2026-09-15T02:01:58.617Z"
+}

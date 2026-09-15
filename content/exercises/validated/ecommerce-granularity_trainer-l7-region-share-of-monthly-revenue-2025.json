@@ -1,0 +1,30 @@
+{
+  "id": "ecommerce-granularity_trainer-l7-region-share-of-monthly-revenue-2025",
+  "domain": "ecommerce",
+  "mode": "granularity_trainer",
+  "level": 7,
+  "skills": [
+    "multi_grain",
+    "ctes",
+    "aggregation",
+    "denominator"
+  ],
+  "title": "Region's share of monthly company revenue, 2025",
+  "prompt": "Leadership wants to see, for each region, what share of that month's total company revenue it represented, month by month in 2025. What grain do you need before you can compute a share of a total?",
+  "population": "Completed orders placed in 2025 and their order_items, joined to customer region.",
+  "grain": "Two stages: region × month revenue, and month total (company-wide) revenue — final result at region × month with a share-of-month column.",
+  "metricDefinition": "region_month_revenue / company_month_revenue, for each region and month in 2025.",
+  "transformationPlan": [
+    "aggregate order_items to region × month revenue (join through orders and customers)",
+    "aggregate region × month revenue up to company × month revenue",
+    "join the two on month and divide"
+  ],
+  "referenceSql": "WITH region_month AS (SELECT c.region, date_trunc('month', o.order_date) AS month, sum(oi.quantity * oi.unit_price * (1 - oi.discount)) AS revenue FROM orders o JOIN order_items oi ON oi.order_id = o.order_id JOIN customers c ON c.customer_id = o.customer_id WHERE o.status = 'completed' AND o.order_date >= DATE '2025-01-01' GROUP BY c.region, date_trunc('month', o.order_date)), month_total AS (SELECT month, sum(revenue) AS total_revenue FROM region_month GROUP BY month) SELECT rm.region, rm.month, rm.revenue, rm.revenue / mt.total_revenue AS share_of_month FROM region_month rm JOIN month_total mt ON mt.month = rm.month ORDER BY rm.month, rm.region",
+  "commonWrongAnswers": [
+    {
+      "sql": "SELECT c.region, date_trunc('month', o.order_date) AS month, sum(oi.quantity * oi.unit_price * (1 - oi.discount)) / (SELECT sum(quantity * unit_price * (1 - discount)) FROM order_items) AS share FROM orders o JOIN order_items oi ON oi.order_id = o.order_id JOIN customers c ON c.customer_id = o.customer_id WHERE o.status = 'completed' GROUP BY c.region, date_trunc('month', o.order_date)",
+      "whyWrong": "Divides by all-time company revenue instead of that same month's company revenue, so the shares don't actually sum to 100% within a month."
+    }
+  ],
+  "admittedAt": "2026-09-15T02:01:58.435Z"
+}

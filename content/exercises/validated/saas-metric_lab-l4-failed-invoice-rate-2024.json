@@ -1,0 +1,20 @@
+{
+  "id": "saas-metric_lab-l4-failed-invoice-rate-2024",
+  "domain": "saas",
+  "mode": "metric_lab",
+  "level": 4,
+  "skills": [
+    "metric_definition",
+    "denominator",
+    "dates"
+  ],
+  "title": "Failed invoice rate, 2024",
+  "prompt": "Billing wants to know: what share of invoices issued in 2024 failed?",
+  "population": "Invoices issued in 2024 (issued_at in [2024-01-01, 2025-01-01)).",
+  "grain": "One row, a single rate.",
+  "metricDefinition": "failed invoices / total invoices, for invoices issued in 2024.",
+  "transformationPlan": null,
+  "referenceSql": "SELECT count(*) FILTER (WHERE status = 'failed')::DOUBLE / count(*) AS failed_rate FROM invoices WHERE issued_at >= TIMESTAMP '2024-01-01' AND issued_at < TIMESTAMP '2025-01-01'",
+  "commonWrongAnswers": [],
+  "admittedAt": "2026-09-15T02:01:58.825Z"
+}

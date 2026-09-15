@@ -1,0 +1,20 @@
+{
+  "id": "fintech-granularity_trainer-l3-account-transaction-volume-2025",
+  "domain": "fintech",
+  "mode": "granularity_trainer",
+  "level": 3,
+  "skills": [
+    "grain",
+    "aggregation",
+    "dates"
+  ],
+  "title": "Total transaction volume per account, 2025",
+  "prompt": "For each account, what's the total transaction volume (sum of amount) in 2025? Transactions start at one row each — what do you need a row to represent instead?",
+  "population": "Transactions occurring in 2025.",
+  "grain": "Starts at one row per transaction; ends at one row per account.",
+  "metricDefinition": "sum(amount) per account, for transactions in 2025.",
+  "transformationPlan": null,
+  "referenceSql": "SELECT account_id, sum(amount) AS total_amount FROM transactions WHERE occurred_at >= TIMESTAMP '2025-01-01' AND occurred_at < TIMESTAMP '2026-01-01' GROUP BY account_id",
+  "commonWrongAnswers": [],
+  "admittedAt": "2026-09-15T02:01:58.617Z"
+}

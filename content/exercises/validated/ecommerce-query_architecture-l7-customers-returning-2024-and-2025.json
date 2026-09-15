@@ -1,0 +1,28 @@
+{
+  "id": "ecommerce-query_architecture-l7-customers-returning-2024-and-2025",
+  "domain": "ecommerce",
+  "mode": "query_architecture",
+  "level": 7,
+  "skills": [
+    "filtering",
+    "dates"
+  ],
+  "title": "Customers with a completed order in both 2024 and 2025",
+  "prompt": "Which customers placed at least one completed order in 2024 AND at least one completed order in 2025 — i.e., they kept coming back across the year boundary?",
+  "population": "Completed orders placed in 2024 and completed orders placed in 2025.",
+  "grain": "One row per returning customer.",
+  "metricDefinition": null,
+  "transformationPlan": [
+    "find customers with a completed order in 2024",
+    "find customers with a completed order in 2025",
+    "intersect the two sets"
+  ],
+  "referenceSql": "SELECT customer_id FROM orders WHERE status = 'completed' AND order_date >= DATE '2024-01-01' AND order_date < DATE '2025-01-01' INTERSECT SELECT customer_id FROM orders WHERE status = 'completed' AND order_date >= DATE '2025-01-01' AND order_date < DATE '2026-01-01'",
+  "commonWrongAnswers": [
+    {
+      "sql": "SELECT DISTINCT customer_id FROM orders WHERE status = 'completed' AND order_date >= DATE '2024-01-01' AND order_date < DATE '2026-01-01'",
+      "whyWrong": "Returns every customer who ordered at any point across both years, not specifically those with at least one order in EACH year — a customer active only in 2024 would wrongly be included."
+    }
+  ],
+  "admittedAt": "2026-09-15T02:11:59.619Z"
+}

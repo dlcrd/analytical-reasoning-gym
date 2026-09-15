@@ -1,0 +1,28 @@
+{
+  "id": "ecommerce-granularity_trainer-l10-cumulative-customer-revenue-share-2025",
+  "domain": "ecommerce",
+  "mode": "granularity_trainer",
+  "level": 10,
+  "skills": [
+    "multi_grain",
+    "window_function",
+    "running_totals",
+    "ctes",
+    "denominator"
+  ],
+  "title": "Cumulative customer revenue share, 2025",
+  "prompt": "The VP wants each customer's cumulative lifetime revenue as of each month in 2025, alongside what share of total company revenue-to-date that represents. What stages of granularity do you need to get there?",
+  "population": "All completed orders (all-time, so cumulative totals are correct) and their order_items.",
+  "grain": "order_item → order → customer × month revenue → customer × month running total (window) → company × month running total → final: customer × month with share-of-cumulative-total, for 2025 months.",
+  "metricDefinition": "cumulative revenue per customer through each month, divided by cumulative company-wide revenue through that same month, restricted to 2025 months in the output.",
+  "transformationPlan": [
+    "aggregate order_items to customer × month revenue (completed orders only, all-time)",
+    "compute each customer's running total across months (window function)",
+    "aggregate customer × month revenue up to company × month, then compute the company's running total",
+    "join customer running totals to company running totals by month and divide",
+    "keep only 2025 months in the final output"
+  ],
+  "referenceSql": "WITH customer_month AS (SELECT o.customer_id, date_trunc('month', o.order_date) AS month, sum(oi.quantity * oi.unit_price * (1 - oi.discount)) AS revenue FROM orders o JOIN order_items oi ON oi.order_id = o.order_id WHERE o.status = 'completed' GROUP BY o.customer_id, date_trunc('month', o.order_date)), customer_running AS (SELECT customer_id, month, sum(revenue) OVER (PARTITION BY customer_id ORDER BY month) AS cumulative_customer_revenue FROM customer_month), company_month AS (SELECT month, sum(revenue) AS revenue FROM customer_month GROUP BY month), company_running AS (SELECT month, sum(revenue) OVER (ORDER BY month) AS cumulative_company_revenue FROM company_month) SELECT cr.customer_id, cr.month, cr.cumulative_customer_revenue, co.cumulative_company_revenue, cr.cumulative_customer_revenue / co.cumulative_company_revenue AS share_of_cumulative FROM customer_running cr JOIN company_running co ON co.month = cr.month WHERE cr.month >= DATE '2025-01-01' ORDER BY cr.month, cr.customer_id",
+  "commonWrongAnswers": [],
+  "admittedAt": "2026-09-15T02:01:58.436Z"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "fintech-query_architecture-l6-avg-debit-amount-by-account-type-2025",
+  "domain": "fintech",
+  "mode": "query_architecture",
+  "level": 6,
+  "skills": [
+    "joins",
+    "aggregation",
+    "filtering"
+  ],
+  "title": "Average debit transaction amount by account type, 2025",
+  "prompt": "What's the average debit transaction amount in 2025, broken down by account type?",
+  "population": "Debit transactions in 2025, joined to accounts for account_type.",
+  "grain": "One row per account_type.",
+  "metricDefinition": "average(amount) for debit transactions in 2025, grouped by account_type.",
+  "transformationPlan": [
+    "filter transactions to type = debit and 2025",
+    "join to accounts for account_type",
+    "average amount grouped by account_type"
+  ],
+  "referenceSql": "SELECT a.account_type, avg(t.amount) AS avg_debit_amount FROM transactions t JOIN accounts a ON a.account_id = t.account_id WHERE t.type = 'debit' AND t.occurred_at >= TIMESTAMP '2025-01-01' AND t.occurred_at < TIMESTAMP '2026-01-01' GROUP BY a.account_type",
+  "commonWrongAnswers": [],
+  "admittedAt": "2026-09-15T02:11:59.829Z"
+}

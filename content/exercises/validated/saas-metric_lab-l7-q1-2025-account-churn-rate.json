@@ -1,0 +1,31 @@
+{
+  "id": "saas-metric_lab-l7-q1-2025-account-churn-rate",
+  "domain": "saas",
+  "mode": "metric_lab",
+  "level": 7,
+  "skills": [
+    "population",
+    "denominator",
+    "dates",
+    "subqueries"
+  ],
+  "title": "Q1 2025 account churn rate",
+  "prompt": "What fraction of accounts with an active subscription at the start of Q1 2025 had no active subscription by the end of the quarter?",
+  "population": "Accounts with a subscription active on 2025-01-01 (started_at on or before that date, and ended_at is null or after it).",
+  "grain": "One row, a single rate.",
+  "metricDefinition": "accounts active on 2025-01-01 with no subscription active on 2025-04-01, divided by accounts active on 2025-01-01.",
+  "transformationPlan": [
+    "find accounts with a subscription active on 2025-01-01",
+    "find accounts with a subscription active on 2025-04-01",
+    "count accounts in the first set but not the second",
+    "divide by the size of the first set"
+  ],
+  "referenceSql": "WITH active_start AS (SELECT DISTINCT account_id FROM subscriptions WHERE started_at <= TIMESTAMP '2025-01-01' AND (ended_at IS NULL OR ended_at > TIMESTAMP '2025-01-01')), active_end AS (SELECT DISTINCT account_id FROM subscriptions WHERE started_at <= TIMESTAMP '2025-04-01' AND (ended_at IS NULL OR ended_at > TIMESTAMP '2025-04-01')) SELECT count(*) FILTER (WHERE a.account_id NOT IN (SELECT account_id FROM active_end))::DOUBLE / count(*) AS q1_churn_rate FROM active_start a",
+  "commonWrongAnswers": [
+    {
+      "sql": "SELECT count(*) FILTER (WHERE status = 'canceled')::DOUBLE / count(*) FROM subscriptions WHERE started_at <= TIMESTAMP '2025-01-01'",
+      "whyWrong": "Uses the subscription's current status flag instead of checking whether the account had ANY active subscription by quarter-end — an account that canceled one plan but started a new one isn't actually churned."
+    }
+  ],
+  "admittedAt": "2026-09-15T02:01:58.826Z"
+}

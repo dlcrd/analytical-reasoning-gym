@@ -1,0 +1,24 @@
+{
+  "id": "fintech-query_architecture-l3-high-risk-customers-new-accounts-2025",
+  "domain": "fintech",
+  "mode": "query_architecture",
+  "level": 3,
+  "skills": [
+    "joins",
+    "filtering",
+    "dates"
+  ],
+  "title": "High-risk customers who opened an account in 2025",
+  "prompt": "How many customers in the 'high' risk segment opened an account in 2025?",
+  "population": "High-risk-segment customers, joined to accounts opened in 2025.",
+  "grain": "One row, a single count.",
+  "metricDefinition": "count of distinct high-risk customers who opened an account in 2025.",
+  "transformationPlan": [
+    "filter customers to risk_segment = high",
+    "join to accounts, filter to opened_at in 2025",
+    "count distinct customers"
+  ],
+  "referenceSql": "SELECT count(DISTINCT c.customer_id) FROM customers c JOIN accounts a ON a.customer_id = c.customer_id WHERE c.risk_segment = 'high' AND a.opened_at >= DATE '2025-01-01' AND a.opened_at < DATE '2026-01-01'",
+  "commonWrongAnswers": [],
+  "admittedAt": "2026-09-15T02:11:59.829Z"
+}

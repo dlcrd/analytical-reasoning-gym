@@ -1,0 +1,20 @@
+{
+  "id": "fintech-granularity_trainer-l5-on-time-rate-per-loan",
+  "domain": "fintech",
+  "mode": "granularity_trainer",
+  "level": 5,
+  "skills": [
+    "grain",
+    "aggregation",
+    "denominator"
+  ],
+  "title": "On-time payment rate per loan",
+  "prompt": "Collections wants the on-time payment rate per loan. Loan_payments start at one row per payment — what do you need a row to represent instead?",
+  "population": "All loan_payments.",
+  "grain": "Starts at one row per payment; ends at one row per loan.",
+  "metricDefinition": "on-time payments / total payments, per loan.",
+  "transformationPlan": null,
+  "referenceSql": "SELECT loan_id, count(*) FILTER (WHERE status = 'on_time')::DOUBLE / count(*) AS on_time_rate FROM loan_payments GROUP BY loan_id",
+  "commonWrongAnswers": [],
+  "admittedAt": "2026-09-15T02:11:59.829Z"
+}

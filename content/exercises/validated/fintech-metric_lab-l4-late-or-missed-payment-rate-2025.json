@@ -1,0 +1,20 @@
+{
+  "id": "fintech-metric_lab-l4-late-or-missed-payment-rate-2025",
+  "domain": "fintech",
+  "mode": "metric_lab",
+  "level": 4,
+  "skills": [
+    "metric_definition",
+    "denominator",
+    "dates"
+  ],
+  "title": "Late-or-missed loan payment rate, 2025",
+  "prompt": "What's the combined late-or-missed rate for loan payments made in 2025?",
+  "population": "Loan payments made in 2025.",
+  "grain": "One row, a single rate.",
+  "metricDefinition": "(late + missed) loan_payments / total loan_payments, for payments made in 2025.",
+  "transformationPlan": null,
+  "referenceSql": "SELECT count(*) FILTER (WHERE status IN ('late', 'missed'))::DOUBLE / count(*) AS late_or_missed_rate FROM loan_payments WHERE paid_at >= TIMESTAMP '2025-01-01' AND paid_at < TIMESTAMP '2026-01-01'",
+  "commonWrongAnswers": [],
+  "admittedAt": "2026-09-15T02:11:59.828Z"
+}

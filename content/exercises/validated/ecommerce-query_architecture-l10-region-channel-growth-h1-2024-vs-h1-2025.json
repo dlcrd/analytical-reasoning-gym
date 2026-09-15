@@ -1,0 +1,27 @@
+{
+  "id": "ecommerce-query_architecture-l10-region-channel-growth-h1-2024-vs-h1-2025",
+  "domain": "ecommerce",
+  "mode": "query_architecture",
+  "level": 10,
+  "skills": [
+    "ctes",
+    "conditional_aggregation",
+    "multi_grain",
+    "denominator",
+    "joins"
+  ],
+  "title": "Region × channel combinations with >50% H1 revenue growth",
+  "prompt": "For each region and channel combination, compare completed-order revenue in the first half of 2024 to the first half of 2025. Which combinations grew by more than 50%?",
+  "population": "Completed orders (and their order_items) placed in H1 2024 (Jan–Jun) or H1 2025 (Jan–Jun), joined to customer region.",
+  "grain": "order_item → region × channel × half-year revenue → pivoted region × channel with both halves as columns → final: filtered result.",
+  "metricDefinition": "H1 revenue growth rate = (H1 2025 revenue − H1 2024 revenue) / H1 2024 revenue, per region × channel combination, filtered to > 50% growth.",
+  "transformationPlan": [
+    "aggregate completed-order revenue (via order_items) to region × channel × half-year",
+    "pivot into H1 2024 and H1 2025 columns per region × channel using conditional aggregation",
+    "compute the growth rate",
+    "filter to growth > 50%"
+  ],
+  "referenceSql": "WITH rev AS (SELECT c.region, o.channel, CASE WHEN o.order_date >= DATE '2024-01-01' AND o.order_date < DATE '2024-07-01' THEN 'h1_2024' WHEN o.order_date >= DATE '2025-01-01' AND o.order_date < DATE '2025-07-01' THEN 'h1_2025' END AS half, sum(oi.quantity * oi.unit_price * (1 - oi.discount)) AS revenue FROM orders o JOIN order_items oi ON oi.order_id = o.order_id JOIN customers c ON c.customer_id = o.customer_id WHERE o.status = 'completed' AND ((o.order_date >= DATE '2024-01-01' AND o.order_date < DATE '2024-07-01') OR (o.order_date >= DATE '2025-01-01' AND o.order_date < DATE '2025-07-01')) GROUP BY c.region, o.channel, half), pivoted AS (SELECT region, channel, max(revenue) FILTER (WHERE half = 'h1_2024') AS h1_2024_revenue, max(revenue) FILTER (WHERE half = 'h1_2025') AS h1_2025_revenue FROM rev GROUP BY region, channel) SELECT region, channel, h1_2024_revenue, h1_2025_revenue, (h1_2025_revenue - h1_2024_revenue) / h1_2024_revenue AS growth_rate FROM pivoted WHERE h1_2024_revenue IS NOT NULL AND h1_2025_revenue IS NOT NULL AND (h1_2025_revenue - h1_2024_revenue) / h1_2024_revenue > 0.5",
+  "commonWrongAnswers": [],
+  "admittedAt": "2026-09-15T02:11:59.619Z"
+}

@@ -1,0 +1,25 @@
+{
+  "id": "ecommerce-granularity_trainer-l9-cumulative-units-by-category-2025",
+  "domain": "ecommerce",
+  "mode": "granularity_trainer",
+  "level": 9,
+  "skills": [
+    "multi_grain",
+    "window_function",
+    "running_totals",
+    "ctes"
+  ],
+  "title": "Cumulative units sold by category, through each 2025 month",
+  "prompt": "Merchandising wants each category's cumulative units sold as of each month in 2025 (all-time cumulative, not reset each year). What stages of granularity get you there?",
+  "population": "Order_items on all completed orders (all-time, so the cumulative total is correct), joined to products for category.",
+  "grain": "order_item → category × month units → category running total (window) → final: category × month for 2025 months.",
+  "metricDefinition": "cumulative sum(quantity) per category, through each month, restricted to 2025 months in the output.",
+  "transformationPlan": [
+    "aggregate order_items to category × month units (completed orders, all-time)",
+    "compute each category's running total across months (window function)",
+    "keep only 2025 months in the final output"
+  ],
+  "referenceSql": "WITH category_month AS (SELECT p.category, date_trunc('month', o.order_date) AS month, sum(oi.quantity) AS units FROM orders o JOIN order_items oi ON oi.order_id = o.order_id JOIN products p ON p.product_id = oi.product_id WHERE o.status = 'completed' GROUP BY p.category, date_trunc('month', o.order_date)), running AS (SELECT category, month, sum(units) OVER (PARTITION BY category ORDER BY month) AS cumulative_units FROM category_month) SELECT category, month, cumulative_units FROM running WHERE month >= DATE '2025-01-01' ORDER BY category, month",
+  "commonWrongAnswers": [],
+  "admittedAt": "2026-09-15T02:11:59.618Z"
+}

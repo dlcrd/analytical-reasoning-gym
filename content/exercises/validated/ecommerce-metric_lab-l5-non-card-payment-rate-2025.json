@@ -1,0 +1,20 @@
+{
+  "id": "ecommerce-metric_lab-l5-non-card-payment-rate-2025",
+  "domain": "ecommerce",
+  "mode": "metric_lab",
+  "level": 5,
+  "skills": [
+    "joins",
+    "denominator",
+    "dates"
+  ],
+  "title": "Non-card payment rate, completed orders 2025",
+  "prompt": "What percentage of completed orders in 2025 were paid using something other than a card (i.e., PayPal or bank transfer)?",
+  "population": "Completed orders placed in 2025, joined to their payment.",
+  "grain": "One row, a single rate.",
+  "metricDefinition": "completed 2025 orders paid via a method other than card, divided by all completed 2025 orders.",
+  "transformationPlan": null,
+  "referenceSql": "SELECT count(*) FILTER (WHERE p.method != 'card')::DOUBLE / count(*) AS non_card_rate FROM orders o JOIN payments p ON p.order_id = o.order_id WHERE o.status = 'completed' AND o.order_date >= DATE '2025-01-01'",
+  "commonWrongAnswers": [],
+  "admittedAt": "2026-09-15T02:11:59.616Z"
+}

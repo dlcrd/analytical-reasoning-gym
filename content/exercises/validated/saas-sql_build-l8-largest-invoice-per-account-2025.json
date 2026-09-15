@@ -1,0 +1,20 @@
+{
+  "id": "saas-sql_build-l8-largest-invoice-per-account-2025",
+  "domain": "saas",
+  "mode": "sql_build",
+  "level": 8,
+  "skills": [
+    "window_function",
+    "ranking",
+    "dates"
+  ],
+  "title": "Each account's single largest 2025 invoice",
+  "prompt": "For each account, what was their single largest invoice (by amount) issued in 2025?",
+  "population": "Invoices issued in 2025.",
+  "grain": "One row per account.",
+  "metricDefinition": null,
+  "transformationPlan": null,
+  "referenceSql": "WITH ranked AS (SELECT account_id, invoice_id, amount, row_number() OVER (PARTITION BY account_id ORDER BY amount DESC) AS rn FROM invoices WHERE issued_at >= TIMESTAMP '2025-01-01' AND issued_at < TIMESTAMP '2026-01-01') SELECT account_id, invoice_id, amount FROM ranked WHERE rn = 1",
+  "commonWrongAnswers": [],
+  "admittedAt": "2026-09-15T02:12:00.022Z"
+}

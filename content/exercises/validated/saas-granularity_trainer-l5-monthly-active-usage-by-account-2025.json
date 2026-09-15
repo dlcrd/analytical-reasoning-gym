@@ -1,0 +1,20 @@
+{
+  "id": "saas-granularity_trainer-l5-monthly-active-usage-by-account-2025",
+  "domain": "saas",
+  "mode": "granularity_trainer",
+  "level": 5,
+  "skills": [
+    "grain",
+    "aggregation",
+    "dates"
+  ],
+  "title": "Monthly usage event count per account, 2025",
+  "prompt": "Product wants monthly active-usage counts per account for 2025 — total usage events per account per month. What does a row represent at the start, and what do you need it to represent at the end?",
+  "population": "Usage events occurring in 2025.",
+  "grain": "Starts at one row per usage event; ends at one row per account per month.",
+  "metricDefinition": "count of usage_events per account per month, for 2025.",
+  "transformationPlan": null,
+  "referenceSql": "SELECT account_id, date_trunc('month', occurred_at) AS month, count(*) AS event_count FROM usage_events WHERE occurred_at >= TIMESTAMP '2025-01-01' AND occurred_at < TIMESTAMP '2026-01-01' GROUP BY account_id, date_trunc('month', occurred_at)",
+  "commonWrongAnswers": [],
+  "admittedAt": "2026-09-15T02:01:58.826Z"
+}

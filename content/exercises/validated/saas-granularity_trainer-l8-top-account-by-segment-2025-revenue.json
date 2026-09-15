@@ -1,0 +1,26 @@
+{
+  "id": "saas-granularity_trainer-l8-top-account-by-segment-2025-revenue",
+  "domain": "saas",
+  "mode": "granularity_trainer",
+  "level": 8,
+  "skills": [
+    "multi_grain",
+    "window_function",
+    "ranking",
+    "joins",
+    "aggregation"
+  ],
+  "title": "Top account by paid revenue, per segment, 2025",
+  "prompt": "For each account segment, which single account generated the most paid invoice revenue in 2025? You'll need to go from invoices to account totals before you can rank within segment.",
+  "population": "Paid invoices issued in 2025, joined to accounts for segment.",
+  "grain": "Starts at one row per invoice → account × segment totals → ranked within segment → final: one row per segment (its top account).",
+  "metricDefinition": "sum(amount) for paid invoices in 2025, per account; the account with the highest total per segment.",
+  "transformationPlan": [
+    "aggregate paid 2025 invoices to account totals, joined to accounts for segment",
+    "rank accounts within each segment by total paid, descending",
+    "keep only rank 1 per segment"
+  ],
+  "referenceSql": "WITH account_totals AS (SELECT a.segment, i.account_id, sum(i.amount) AS total_paid FROM invoices i JOIN accounts a ON a.account_id = i.account_id WHERE i.status = 'paid' AND i.issued_at >= TIMESTAMP '2025-01-01' AND i.issued_at < TIMESTAMP '2026-01-01' GROUP BY a.segment, i.account_id), ranked AS (SELECT segment, account_id, total_paid, row_number() OVER (PARTITION BY segment ORDER BY total_paid DESC) AS rn FROM account_totals) SELECT segment, account_id, total_paid FROM ranked WHERE rn = 1",
+  "commonWrongAnswers": [],
+  "admittedAt": "2026-09-15T02:01:58.826Z"
+}

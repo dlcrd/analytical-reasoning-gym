@@ -1,0 +1,26 @@
+{
+  "id": "fintech-query_architecture-l9-multi-account-credit-share-2025",
+  "domain": "fintech",
+  "mode": "query_architecture",
+  "level": 9,
+  "skills": [
+    "ctes",
+    "subqueries",
+    "joins",
+    "aggregation",
+    "denominator"
+  ],
+  "title": "Credit-account share of transaction volume, multi-account customers, 2025",
+  "prompt": "Among customers with more than one account, what share of their total 2025 transaction volume happened on their credit-type account(s)? Are multi-account customers relying heavily on credit?",
+  "population": "Customers with more than one account, and their 2025 transactions across all accounts.",
+  "grain": "One row per multi-account customer.",
+  "metricDefinition": "sum(2025 transaction amount on credit-type accounts) / sum(2025 transaction amount on all accounts), per customer, restricted to customers with more than one account.",
+  "transformationPlan": [
+    "find customers with more than one account",
+    "aggregate their 2025 transaction volume, split into credit-account volume and total volume",
+    "compute the credit share per customer"
+  ],
+  "referenceSql": "WITH multi_account_customers AS (SELECT customer_id FROM accounts GROUP BY customer_id HAVING count(*) > 1), txn_by_customer AS (SELECT a.customer_id, sum(t.amount) FILTER (WHERE a.account_type = 'credit') AS credit_volume, sum(t.amount) AS total_volume FROM transactions t JOIN accounts a ON a.account_id = t.account_id WHERE a.customer_id IN (SELECT customer_id FROM multi_account_customers) AND t.occurred_at >= TIMESTAMP '2025-01-01' AND t.occurred_at < TIMESTAMP '2026-01-01' GROUP BY a.customer_id) SELECT customer_id, credit_volume, total_volume, coalesce(credit_volume, 0) / total_volume AS credit_share FROM txn_by_customer",
+  "commonWrongAnswers": [],
+  "admittedAt": "2026-09-15T02:11:59.830Z"
+}

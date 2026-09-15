@@ -1,0 +1,24 @@
+{
+  "id": "saas-query_architecture-l3-enterprise-accounts-with-failed-invoice-2025",
+  "domain": "saas",
+  "mode": "query_architecture",
+  "level": 3,
+  "skills": [
+    "joins",
+    "filtering",
+    "dates"
+  ],
+  "title": "Enterprise accounts with a failed invoice in 2025",
+  "prompt": "How many accounts in the enterprise segment have at least one failed invoice in 2025?",
+  "population": "Enterprise-segment accounts, joined to their 2025 invoices.",
+  "grain": "One row, a single count.",
+  "metricDefinition": "count of distinct enterprise-segment accounts with ≥1 failed invoice in 2025.",
+  "transformationPlan": [
+    "filter invoices to 2025 with status = failed",
+    "join to accounts, filter to segment = enterprise",
+    "count distinct accounts"
+  ],
+  "referenceSql": "SELECT count(DISTINCT a.account_id) FROM accounts a JOIN invoices i ON i.account_id = a.account_id WHERE a.segment = 'enterprise' AND i.status = 'failed' AND i.issued_at >= TIMESTAMP '2025-01-01' AND i.issued_at < TIMESTAMP '2026-01-01'",
+  "commonWrongAnswers": [],
+  "admittedAt": "2026-09-15T02:01:58.827Z"
+}

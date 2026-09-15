@@ -1,0 +1,809 @@
+[
+  {
+    "id": "ecommerce-sql_build-l3-marketplace-completed-orders",
+    "domain": "ecommerce",
+    "mode": "sql_build",
+    "level": 3,
+    "skills": [
+      "filtering",
+      "dates"
+    ],
+    "admittedAt": "2026-09-15T01:43:58.098Z"
+  },
+  {
+    "id": "ecommerce-sql_build-l5-refund-rate-by-channel",
+    "domain": "ecommerce",
+    "mode": "sql_build",
+    "level": 5,
+    "skills": [
+      "aggregation",
+      "denominator"
+    ],
+    "admittedAt": "2026-09-15T01:43:58.099Z"
+  },
+  {
+    "id": "ecommerce-sql_build-l6-avg-order-value-by-segment",
+    "domain": "ecommerce",
+    "mode": "sql_build",
+    "level": 6,
+    "skills": [
+      "joins",
+      "aggregation",
+      "subqueries"
+    ],
+    "admittedAt": "2026-09-15T01:43:58.100Z"
+  },
+  {
+    "id": "ecommerce-metric_lab-l3-order-cancellation-rate-2024",
+    "domain": "ecommerce",
+    "mode": "metric_lab",
+    "level": 3,
+    "skills": [
+      "metric_definition",
+      "denominator",
+      "dates"
+    ],
+    "admittedAt": "2026-09-15T02:01:58.433Z"
+  },
+  {
+    "id": "ecommerce-metric_lab-l6-avg-revenue-per-completed-order-by-category-h1-2025",
+    "domain": "ecommerce",
+    "mode": "metric_lab",
+    "level": 6,
+    "skills": [
+      "aggregation",
+      "joins",
+      "denominator",
+      "multi_grain"
+    ],
+    "admittedAt": "2026-09-15T02:01:58.435Z"
+  },
+  {
+    "id": "ecommerce-metric_lab-l9-90-day-activation-rate-2024-signups",
+    "domain": "ecommerce",
+    "mode": "metric_lab",
+    "level": 9,
+    "skills": [
+      "population",
+      "denominator",
+      "dates"
+    ],
+    "admittedAt": "2026-09-15T02:01:58.435Z"
+  },
+  {
+    "id": "ecommerce-granularity_trainer-l4-monthly-revenue-per-customer-2024",
+    "domain": "ecommerce",
+    "mode": "granularity_trainer",
+    "level": 4,
+    "skills": [
+      "grain",
+      "aggregation",
+      "dates"
+    ],
+    "admittedAt": "2026-09-15T02:01:58.435Z"
+  },
+  {
+    "id": "ecommerce-granularity_trainer-l7-region-share-of-monthly-revenue-2025",
+    "domain": "ecommerce",
+    "mode": "granularity_trainer",
+    "level": 7,
+    "skills": [
+      "multi_grain",
+      "ctes",
+      "aggregation",
+      "denominator"
+    ],
+    "admittedAt": "2026-09-15T02:01:58.435Z"
+  },
+  {
+    "id": "ecommerce-granularity_trainer-l10-cumulative-customer-revenue-share-2025",
+    "domain": "ecommerce",
+    "mode": "granularity_trainer",
+    "level": 10,
+    "skills": [
+      "multi_grain",
+      "window_function",
+      "running_totals",
+      "ctes",
+      "denominator"
+    ],
+    "admittedAt": "2026-09-15T02:01:58.436Z"
+  },
+  {
+    "id": "ecommerce-query_architecture-l5-category-mom-growth-2025",
+    "domain": "ecommerce",
+    "mode": "query_architecture",
+    "level": 5,
+    "skills": [
+      "window_function",
+      "lag_lead",
+      "multi_grain",
+      "aggregation"
+    ],
+    "admittedAt": "2026-09-15T02:01:58.436Z"
+  },
+  {
+    "id": "ecommerce-query_architecture-l8-customers-ramping-up-spend",
+    "domain": "ecommerce",
+    "mode": "query_architecture",
+    "level": 8,
+    "skills": [
+      "ctes",
+      "aggregation",
+      "multi_grain",
+      "joins"
+    ],
+    "admittedAt": "2026-09-15T02:01:58.436Z"
+  },
+  {
+    "id": "ecommerce-sql_build-l9-days-since-last-order-winback",
+    "domain": "ecommerce",
+    "mode": "sql_build",
+    "level": 9,
+    "skills": [
+      "window_function",
+      "ranking",
+      "dates"
+    ],
+    "admittedAt": "2026-09-15T02:01:58.436Z"
+  },
+  {
+    "id": "fintech-metric_lab-l5-loan-default-rate-by-risk-segment",
+    "domain": "fintech",
+    "mode": "metric_lab",
+    "level": 5,
+    "skills": [
+      "joins",
+      "aggregation",
+      "denominator"
+    ],
+    "admittedAt": "2026-09-15T02:01:58.616Z"
+  },
+  {
+    "id": "fintech-metric_lab-l8-loan-activation-rate-2023-cohort",
+    "domain": "fintech",
+    "mode": "metric_lab",
+    "level": 8,
+    "skills": [
+      "population",
+      "denominator",
+      "dates",
+      "subqueries"
+    ],
+    "admittedAt": "2026-09-15T02:01:58.616Z"
+  },
+  {
+    "id": "fintech-granularity_trainer-l3-account-transaction-volume-2025",
+    "domain": "fintech",
+    "mode": "granularity_trainer",
+    "level": 3,
+    "skills": [
+      "grain",
+      "aggregation",
+      "dates"
+    ],
+    "admittedAt": "2026-09-15T02:01:58.617Z"
+  },
+  {
+    "id": "fintech-granularity_trainer-l6-customer-transaction-volume-2025",
+    "domain": "fintech",
+    "mode": "granularity_trainer",
+    "level": 6,
+    "skills": [
+      "grain",
+      "multi_grain",
+      "joins",
+      "aggregation"
+    ],
+    "admittedAt": "2026-09-15T02:01:58.617Z"
+  },
+  {
+    "id": "fintech-granularity_trainer-l9-customer-month-share-of-year-2025",
+    "domain": "fintech",
+    "mode": "granularity_trainer",
+    "level": 9,
+    "skills": [
+      "multi_grain",
+      "ctes",
+      "aggregation",
+      "denominator"
+    ],
+    "admittedAt": "2026-09-15T02:01:58.617Z"
+  },
+  {
+    "id": "fintech-query_architecture-l4-customers-with-checking-and-savings",
+    "domain": "fintech",
+    "mode": "query_architecture",
+    "level": 4,
+    "skills": [
+      "joins",
+      "subqueries",
+      "filtering"
+    ],
+    "admittedAt": "2026-09-15T02:01:58.617Z"
+  },
+  {
+    "id": "fintech-query_architecture-l7-current-loans-with-missed-payment",
+    "domain": "fintech",
+    "mode": "query_architecture",
+    "level": 7,
+    "skills": [
+      "filtering",
+      "subqueries"
+    ],
+    "admittedAt": "2026-09-15T02:01:58.617Z"
+  },
+  {
+    "id": "fintech-query_architecture-l10-debit-volume-to-principal-ratio-by-segment",
+    "domain": "fintech",
+    "mode": "query_architecture",
+    "level": 10,
+    "skills": [
+      "multi_grain",
+      "ctes",
+      "joins",
+      "aggregation",
+      "denominator"
+    ],
+    "admittedAt": "2026-09-15T02:01:58.617Z"
+  },
+  {
+    "id": "fintech-sql_build-l8-rolling-3mo-transaction-avg-2025",
+    "domain": "fintech",
+    "mode": "sql_build",
+    "level": 8,
+    "skills": [
+      "window_function",
+      "rolling_windows",
+      "aggregation",
+      "ctes"
+    ],
+    "admittedAt": "2026-09-15T02:01:58.618Z"
+  },
+  {
+    "id": "saas-metric_lab-l4-failed-invoice-rate-2024",
+    "domain": "saas",
+    "mode": "metric_lab",
+    "level": 4,
+    "skills": [
+      "metric_definition",
+      "denominator",
+      "dates"
+    ],
+    "admittedAt": "2026-09-15T02:01:58.825Z"
+  },
+  {
+    "id": "saas-metric_lab-l7-q1-2025-account-churn-rate",
+    "domain": "saas",
+    "mode": "metric_lab",
+    "level": 7,
+    "skills": [
+      "population",
+      "denominator",
+      "dates",
+      "subqueries"
+    ],
+    "admittedAt": "2026-09-15T02:01:58.826Z"
+  },
+  {
+    "id": "saas-metric_lab-l10-upgrade-rate-and-avg-price-increase",
+    "domain": "saas",
+    "mode": "metric_lab",
+    "level": 10,
+    "skills": [
+      "window_function",
+      "ranking",
+      "joins",
+      "multi_grain",
+      "denominator"
+    ],
+    "admittedAt": "2026-09-15T02:01:58.826Z"
+  },
+  {
+    "id": "saas-granularity_trainer-l5-monthly-active-usage-by-account-2025",
+    "domain": "saas",
+    "mode": "granularity_trainer",
+    "level": 5,
+    "skills": [
+      "grain",
+      "aggregation",
+      "dates"
+    ],
+    "admittedAt": "2026-09-15T02:01:58.826Z"
+  },
+  {
+    "id": "saas-granularity_trainer-l8-top-account-by-segment-2025-revenue",
+    "domain": "saas",
+    "mode": "granularity_trainer",
+    "level": 8,
+    "skills": [
+      "multi_grain",
+      "window_function",
+      "ranking",
+      "joins",
+      "aggregation"
+    ],
+    "admittedAt": "2026-09-15T02:01:58.826Z"
+  },
+  {
+    "id": "saas-query_architecture-l3-enterprise-accounts-with-failed-invoice-2025",
+    "domain": "saas",
+    "mode": "query_architecture",
+    "level": 3,
+    "skills": [
+      "joins",
+      "filtering",
+      "dates"
+    ],
+    "admittedAt": "2026-09-15T02:01:58.827Z"
+  },
+  {
+    "id": "saas-query_architecture-l6-active-mrr-by-plan-mid-2025",
+    "domain": "saas",
+    "mode": "query_architecture",
+    "level": 6,
+    "skills": [
+      "joins",
+      "aggregation",
+      "filtering"
+    ],
+    "admittedAt": "2026-09-15T02:01:58.827Z"
+  },
+  {
+    "id": "saas-query_architecture-l9-at-risk-accounts-usage-drop",
+    "domain": "saas",
+    "mode": "query_architecture",
+    "level": 9,
+    "skills": [
+      "ctes",
+      "subqueries",
+      "aggregation",
+      "denominator",
+      "dates"
+    ],
+    "admittedAt": "2026-09-15T02:01:58.827Z"
+  },
+  {
+    "id": "saas-sql_build-l4-smb-signups-q1-2025",
+    "domain": "saas",
+    "mode": "sql_build",
+    "level": 4,
+    "skills": [
+      "filtering",
+      "dates"
+    ],
+    "admittedAt": "2026-09-15T02:01:58.827Z"
+  },
+  {
+    "id": "saas-sql_build-l7-cumulative-signups-2025",
+    "domain": "saas",
+    "mode": "sql_build",
+    "level": 7,
+    "skills": [
+      "window_function",
+      "running_totals",
+      "aggregation",
+      "dates"
+    ],
+    "admittedAt": "2026-09-15T02:01:58.827Z"
+  },
+  {
+    "id": "saas-sql_build-l10-plan-month-with-largest-invoice-increase",
+    "domain": "saas",
+    "mode": "sql_build",
+    "level": 10,
+    "skills": [
+      "window_function",
+      "lag_lead",
+      "ranking",
+      "ctes",
+      "multi_grain"
+    ],
+    "admittedAt": "2026-09-15T02:01:58.828Z"
+  },
+  {
+    "id": "ecommerce-metric_lab-l5-non-card-payment-rate-2025",
+    "domain": "ecommerce",
+    "mode": "metric_lab",
+    "level": 5,
+    "skills": [
+      "joins",
+      "denominator",
+      "dates"
+    ],
+    "admittedAt": "2026-09-15T02:11:59.616Z"
+  },
+  {
+    "id": "ecommerce-metric_lab-l8-repeat-purchase-rate-2024-cohort",
+    "domain": "ecommerce",
+    "mode": "metric_lab",
+    "level": 8,
+    "skills": [
+      "ctes",
+      "population",
+      "denominator",
+      "dates",
+      "subqueries"
+    ],
+    "admittedAt": "2026-09-15T02:11:59.618Z"
+  },
+  {
+    "id": "ecommerce-granularity_trainer-l3-refunded-amount-by-method",
+    "domain": "ecommerce",
+    "mode": "granularity_trainer",
+    "level": 3,
+    "skills": [
+      "grain",
+      "aggregation"
+    ],
+    "admittedAt": "2026-09-15T02:11:59.618Z"
+  },
+  {
+    "id": "ecommerce-granularity_trainer-l6-units-sold-per-product-month-2025",
+    "domain": "ecommerce",
+    "mode": "granularity_trainer",
+    "level": 6,
+    "skills": [
+      "grain",
+      "aggregation",
+      "dates"
+    ],
+    "admittedAt": "2026-09-15T02:11:59.618Z"
+  },
+  {
+    "id": "ecommerce-granularity_trainer-l9-cumulative-units-by-category-2025",
+    "domain": "ecommerce",
+    "mode": "granularity_trainer",
+    "level": 9,
+    "skills": [
+      "multi_grain",
+      "window_function",
+      "running_totals",
+      "ctes"
+    ],
+    "admittedAt": "2026-09-15T02:11:59.618Z"
+  },
+  {
+    "id": "ecommerce-query_architecture-l4-never-ordered-electronics",
+    "domain": "ecommerce",
+    "mode": "query_architecture",
+    "level": 4,
+    "skills": [
+      "filtering",
+      "subqueries"
+    ],
+    "admittedAt": "2026-09-15T02:11:59.618Z"
+  },
+  {
+    "id": "ecommerce-query_architecture-l7-customers-returning-2024-and-2025",
+    "domain": "ecommerce",
+    "mode": "query_architecture",
+    "level": 7,
+    "skills": [
+      "filtering",
+      "dates"
+    ],
+    "admittedAt": "2026-09-15T02:11:59.619Z"
+  },
+  {
+    "id": "ecommerce-query_architecture-l10-region-channel-growth-h1-2024-vs-h1-2025",
+    "domain": "ecommerce",
+    "mode": "query_architecture",
+    "level": 10,
+    "skills": [
+      "ctes",
+      "conditional_aggregation",
+      "multi_grain",
+      "denominator",
+      "joins"
+    ],
+    "admittedAt": "2026-09-15T02:11:59.619Z"
+  },
+  {
+    "id": "ecommerce-sql_build-l4-payment-failure-rate-by-method",
+    "domain": "ecommerce",
+    "mode": "sql_build",
+    "level": 4,
+    "skills": [
+      "aggregation",
+      "denominator"
+    ],
+    "admittedAt": "2026-09-15T02:11:59.619Z"
+  },
+  {
+    "id": "ecommerce-sql_build-l8-customers-all-three-channels",
+    "domain": "ecommerce",
+    "mode": "sql_build",
+    "level": 8,
+    "skills": [
+      "aggregation",
+      "filtering"
+    ],
+    "admittedAt": "2026-09-15T02:11:59.619Z"
+  },
+  {
+    "id": "fintech-metric_lab-l4-late-or-missed-payment-rate-2025",
+    "domain": "fintech",
+    "mode": "metric_lab",
+    "level": 4,
+    "skills": [
+      "metric_definition",
+      "denominator",
+      "dates"
+    ],
+    "admittedAt": "2026-09-15T02:11:59.828Z"
+  },
+  {
+    "id": "fintech-metric_lab-l7-at-risk-current-loans-2024-cohort",
+    "domain": "fintech",
+    "mode": "metric_lab",
+    "level": 7,
+    "skills": [
+      "ctes",
+      "joins",
+      "denominator",
+      "dates"
+    ],
+    "admittedAt": "2026-09-15T02:11:59.829Z"
+  },
+  {
+    "id": "fintech-metric_lab-l10-clean-payment-history-pre-2023-cohort",
+    "domain": "fintech",
+    "mode": "metric_lab",
+    "level": 10,
+    "skills": [
+      "ctes",
+      "subqueries",
+      "population",
+      "denominator"
+    ],
+    "admittedAt": "2026-09-15T02:11:59.829Z"
+  },
+  {
+    "id": "fintech-granularity_trainer-l5-on-time-rate-per-loan",
+    "domain": "fintech",
+    "mode": "granularity_trainer",
+    "level": 5,
+    "skills": [
+      "grain",
+      "aggregation",
+      "denominator"
+    ],
+    "admittedAt": "2026-09-15T02:11:59.829Z"
+  },
+  {
+    "id": "fintech-granularity_trainer-l8-top-spending-category-per-account-2025",
+    "domain": "fintech",
+    "mode": "granularity_trainer",
+    "level": 8,
+    "skills": [
+      "multi_grain",
+      "window_function",
+      "ranking",
+      "aggregation"
+    ],
+    "admittedAt": "2026-09-15T02:11:59.829Z"
+  },
+  {
+    "id": "fintech-query_architecture-l3-high-risk-customers-new-accounts-2025",
+    "domain": "fintech",
+    "mode": "query_architecture",
+    "level": 3,
+    "skills": [
+      "joins",
+      "filtering",
+      "dates"
+    ],
+    "admittedAt": "2026-09-15T02:11:59.829Z"
+  },
+  {
+    "id": "fintech-query_architecture-l6-avg-debit-amount-by-account-type-2025",
+    "domain": "fintech",
+    "mode": "query_architecture",
+    "level": 6,
+    "skills": [
+      "joins",
+      "aggregation",
+      "filtering"
+    ],
+    "admittedAt": "2026-09-15T02:11:59.829Z"
+  },
+  {
+    "id": "fintech-query_architecture-l9-multi-account-credit-share-2025",
+    "domain": "fintech",
+    "mode": "query_architecture",
+    "level": 9,
+    "skills": [
+      "ctes",
+      "subqueries",
+      "joins",
+      "aggregation",
+      "denominator"
+    ],
+    "admittedAt": "2026-09-15T02:11:59.830Z"
+  },
+  {
+    "id": "fintech-sql_build-l3-entertainment-transactions-2025",
+    "domain": "fintech",
+    "mode": "sql_build",
+    "level": 3,
+    "skills": [
+      "filtering",
+      "dates"
+    ],
+    "admittedAt": "2026-09-15T02:11:59.830Z"
+  },
+  {
+    "id": "fintech-sql_build-l5-avg-interest-rate-by-loan-status",
+    "domain": "fintech",
+    "mode": "sql_build",
+    "level": 5,
+    "skills": [
+      "aggregation"
+    ],
+    "admittedAt": "2026-09-15T02:11:59.830Z"
+  },
+  {
+    "id": "fintech-sql_build-l7-cumulative-loans-originated-2025",
+    "domain": "fintech",
+    "mode": "sql_build",
+    "level": 7,
+    "skills": [
+      "window_function",
+      "running_totals",
+      "aggregation",
+      "dates"
+    ],
+    "admittedAt": "2026-09-15T02:11:59.830Z"
+  },
+  {
+    "id": "fintech-sql_build-l10-poor-payment-track-record-by-value",
+    "domain": "fintech",
+    "mode": "sql_build",
+    "level": 10,
+    "skills": [
+      "ctes",
+      "joins",
+      "aggregation",
+      "denominator",
+      "conditional_aggregation"
+    ],
+    "admittedAt": "2026-09-15T02:11:59.830Z"
+  },
+  {
+    "id": "saas-metric_lab-l3-canceled-subscription-rate",
+    "domain": "saas",
+    "mode": "metric_lab",
+    "level": 3,
+    "skills": [
+      "metric_definition",
+      "denominator"
+    ],
+    "admittedAt": "2026-09-15T02:12:00.018Z"
+  },
+  {
+    "id": "saas-metric_lab-l6-avg-mrr-enterprise-accounts-mid-2025",
+    "domain": "saas",
+    "mode": "metric_lab",
+    "level": 6,
+    "skills": [
+      "joins",
+      "aggregation",
+      "filtering"
+    ],
+    "admittedAt": "2026-09-15T02:12:00.019Z"
+  },
+  {
+    "id": "saas-metric_lab-l9-enterprise-login-activity-mid-2025",
+    "domain": "saas",
+    "mode": "metric_lab",
+    "level": 9,
+    "skills": [
+      "ctes",
+      "subqueries",
+      "population",
+      "denominator",
+      "dates"
+    ],
+    "admittedAt": "2026-09-15T02:12:00.019Z"
+  },
+  {
+    "id": "saas-granularity_trainer-l4-monthly-paid-invoice-total-2025",
+    "domain": "saas",
+    "mode": "granularity_trainer",
+    "level": 4,
+    "skills": [
+      "grain",
+      "aggregation",
+      "dates"
+    ],
+    "admittedAt": "2026-09-15T02:12:00.020Z"
+  },
+  {
+    "id": "saas-granularity_trainer-l7-plan-share-of-monthly-revenue-2025",
+    "domain": "saas",
+    "mode": "granularity_trainer",
+    "level": 7,
+    "skills": [
+      "multi_grain",
+      "ctes",
+      "aggregation",
+      "denominator",
+      "joins"
+    ],
+    "admittedAt": "2026-09-15T02:12:00.021Z"
+  },
+  {
+    "id": "saas-granularity_trainer-l10-account-share-of-plan-monthly-revenue-2025",
+    "domain": "saas",
+    "mode": "granularity_trainer",
+    "level": 10,
+    "skills": [
+      "multi_grain",
+      "ctes",
+      "aggregation",
+      "denominator",
+      "joins"
+    ],
+    "admittedAt": "2026-09-15T02:12:00.021Z"
+  },
+  {
+    "id": "saas-query_architecture-l5-avg-days-to-cancel",
+    "domain": "saas",
+    "mode": "query_architecture",
+    "level": 5,
+    "skills": [
+      "filtering",
+      "aggregation",
+      "dates"
+    ],
+    "admittedAt": "2026-09-15T02:12:00.021Z"
+  },
+  {
+    "id": "saas-query_architecture-l8-invoice-total-exceeds-plan-price-2025",
+    "domain": "saas",
+    "mode": "query_architecture",
+    "level": 8,
+    "skills": [
+      "ctes",
+      "joins",
+      "aggregation",
+      "filtering"
+    ],
+    "admittedAt": "2026-09-15T02:12:00.021Z"
+  },
+  {
+    "id": "saas-sql_build-l6-plan-sequence-per-account",
+    "domain": "saas",
+    "mode": "sql_build",
+    "level": 6,
+    "skills": [
+      "aggregation"
+    ],
+    "admittedAt": "2026-09-15T02:12:00.022Z"
+  },
+  {
+    "id": "saas-sql_build-l8-largest-invoice-per-account-2025",
+    "domain": "saas",
+    "mode": "sql_build",
+    "level": 8,
+    "skills": [
+      "window_function",
+      "ranking",
+      "dates"
+    ],
+    "admittedAt": "2026-09-15T02:12:00.022Z"
+  },
+  {
+    "id": "saas-sql_build-l9-avg-days-between-invoices",
+    "domain": "saas",
+    "mode": "sql_build",
+    "level": 9,
+    "skills": [
+      "window_function",
+      "lag_lead",
+      "aggregation"
+    ],
+    "admittedAt": "2026-09-15T02:12:00.022Z"
+  }
+]

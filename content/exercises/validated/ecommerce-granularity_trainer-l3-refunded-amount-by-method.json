@@ -1,0 +1,19 @@
+{
+  "id": "ecommerce-granularity_trainer-l3-refunded-amount-by-method",
+  "domain": "ecommerce",
+  "mode": "granularity_trainer",
+  "level": 3,
+  "skills": [
+    "grain",
+    "aggregation"
+  ],
+  "title": "Total refunded amount by payment method",
+  "prompt": "Support wants total refunded amount by payment method. Payments start at one row per payment — what do you need a row to represent instead?",
+  "population": "Payments with status = refunded.",
+  "grain": "Starts at one row per payment; ends at one row per payment method.",
+  "metricDefinition": "sum(amount) for refunded payments, grouped by method.",
+  "transformationPlan": null,
+  "referenceSql": "SELECT method, sum(amount) AS total_refunded FROM payments WHERE status = 'refunded' GROUP BY method",
+  "commonWrongAnswers": [],
+  "admittedAt": "2026-09-15T02:11:59.618Z"
+}

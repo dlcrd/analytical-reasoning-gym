@@ -1,0 +1,30 @@
+{
+  "id": "ecommerce-metric_lab-l9-90-day-activation-rate-2024-signups",
+  "domain": "ecommerce",
+  "mode": "metric_lab",
+  "level": 9,
+  "skills": [
+    "population",
+    "denominator",
+    "dates"
+  ],
+  "title": "90-day activation rate for 2024 signups",
+  "prompt": "Of the customers who signed up in 2024, what fraction placed at least one completed order within their first 90 days?",
+  "population": "Customers with signup_date in 2024.",
+  "grain": "One row, a single rate.",
+  "metricDefinition": "customers (signed up in 2024) with ≥1 completed order within 90 days of their signup_date, divided by all customers who signed up in 2024.",
+  "transformationPlan": [
+    "identify customers who signed up in 2024",
+    "for each, check for a completed order between signup_date and signup_date + 90 days",
+    "count qualifying customers",
+    "divide by total 2024 signups"
+  ],
+  "referenceSql": "SELECT count(DISTINCT c.customer_id) FILTER (WHERE EXISTS (SELECT 1 FROM orders o WHERE o.customer_id = c.customer_id AND o.status = 'completed' AND o.order_date >= c.signup_date AND o.order_date < c.signup_date + INTERVAL '90 days'))::DOUBLE / count(DISTINCT c.customer_id) AS activation_rate FROM customers c WHERE c.signup_date >= DATE '2024-01-01' AND c.signup_date < DATE '2025-01-01'",
+  "commonWrongAnswers": [
+    {
+      "sql": "SELECT count(DISTINCT o.customer_id)::DOUBLE / count(DISTINCT c.customer_id) FROM customers c JOIN orders o ON o.customer_id = c.customer_id WHERE c.signup_date >= DATE '2024-01-01' AND c.signup_date < DATE '2025-01-01'",
+      "whyWrong": "Joining orders to customers without the 90-day window or the completed-status filter counts any order ever, not activation within the defined window."
+    }
+  ],
+  "admittedAt": "2026-09-15T02:01:58.435Z"
+}

@@ -1,0 +1,27 @@
+{
+  "id": "ecommerce-metric_lab-l8-repeat-purchase-rate-2024-cohort",
+  "domain": "ecommerce",
+  "mode": "metric_lab",
+  "level": 8,
+  "skills": [
+    "ctes",
+    "population",
+    "denominator",
+    "dates",
+    "subqueries"
+  ],
+  "title": "180-day repeat-purchase rate, 2024 first-order cohort",
+  "prompt": "Of customers whose very first completed order happened in 2024, what fraction placed a second completed order within 180 days of that first one?",
+  "population": "Customers whose earliest completed order falls in 2024.",
+  "grain": "One row, a single rate.",
+  "metricDefinition": "customers (first completed order in 2024) with a second completed order within 180 days after the first, divided by all customers whose first completed order was in 2024.",
+  "transformationPlan": [
+    "find each customer's first completed order date",
+    "keep customers whose first order fell in 2024",
+    "check for a second completed order within 180 days after the first",
+    "compute the repeat rate"
+  ],
+  "referenceSql": "WITH first_order AS (SELECT customer_id, min(order_date) AS first_date FROM orders WHERE status = 'completed' GROUP BY customer_id), cohort AS (SELECT customer_id, first_date FROM first_order WHERE first_date >= DATE '2024-01-01' AND first_date < DATE '2025-01-01') SELECT count(DISTINCT c.customer_id) FILTER (WHERE EXISTS (SELECT 1 FROM orders o WHERE o.customer_id = c.customer_id AND o.status = 'completed' AND o.order_date > c.first_date AND o.order_date <= c.first_date + INTERVAL '180 days'))::DOUBLE / count(DISTINCT c.customer_id) AS repeat_rate FROM cohort c",
+  "commonWrongAnswers": [],
+  "admittedAt": "2026-09-15T02:11:59.618Z"
+}

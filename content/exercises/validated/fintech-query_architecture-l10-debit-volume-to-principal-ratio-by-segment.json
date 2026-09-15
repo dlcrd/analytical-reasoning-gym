@@ -1,0 +1,26 @@
+{
+  "id": "fintech-query_architecture-l10-debit-volume-to-principal-ratio-by-segment",
+  "domain": "fintech",
+  "mode": "query_architecture",
+  "level": 10,
+  "skills": [
+    "multi_grain",
+    "ctes",
+    "joins",
+    "aggregation",
+    "denominator"
+  ],
+  "title": "Debit volume to outstanding principal ratio, by risk segment",
+  "prompt": "For each customer risk segment, what's the ratio of total 2025 debit transaction volume to total outstanding principal on current loans? A rough exposure indicator for risk.",
+  "population": "2025 debit transactions (joined through accounts to customers for risk_segment) and current-status loans (joined to customers for risk_segment).",
+  "grain": "One row per risk segment.",
+  "metricDefinition": "sum(2025 debit transaction amount) / sum(principal of current-status loans), grouped by customer risk_segment.",
+  "transformationPlan": [
+    "aggregate 2025 debit transactions by customer risk_segment (via account → customer)",
+    "aggregate current loan principal by customer risk_segment",
+    "join the two aggregates on risk_segment and divide"
+  ],
+  "referenceSql": "WITH debit_by_segment AS (SELECT c.risk_segment, sum(t.amount) AS debit_volume FROM transactions t JOIN accounts a ON a.account_id = t.account_id JOIN customers c ON c.customer_id = a.customer_id WHERE t.type = 'debit' AND t.occurred_at >= TIMESTAMP '2025-01-01' AND t.occurred_at < TIMESTAMP '2026-01-01' GROUP BY c.risk_segment), principal_by_segment AS (SELECT c.risk_segment, sum(l.principal) AS outstanding_principal FROM loans l JOIN customers c ON c.customer_id = l.customer_id WHERE l.status = 'current' GROUP BY c.risk_segment) SELECT d.risk_segment, d.debit_volume, p.outstanding_principal, d.debit_volume / p.outstanding_principal AS exposure_ratio FROM debit_by_segment d JOIN principal_by_segment p ON p.risk_segment = d.risk_segment",
+  "commonWrongAnswers": [],
+  "admittedAt": "2026-09-15T02:01:58.617Z"
+}

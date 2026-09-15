@@ -1,0 +1,27 @@
+{
+  "id": "saas-query_architecture-l9-at-risk-accounts-usage-drop",
+  "domain": "saas",
+  "mode": "query_architecture",
+  "level": 9,
+  "skills": [
+    "ctes",
+    "subqueries",
+    "aggregation",
+    "denominator",
+    "dates"
+  ],
+  "title": "At-risk accounts: usage dropped >50% month over month",
+  "prompt": "Among accounts with an active subscription as of 2025-08-31, which had usage-event counts drop by more than 50% from July 2025 to August 2025? These are the at-risk accounts for the retention team.",
+  "population": "Accounts with a subscription active as of 2025-08-31, with at least one usage event in July 2025.",
+  "grain": "One row per at-risk account.",
+  "metricDefinition": "percent change in usage_events count between July 2025 and August 2025, per account; at-risk = active subscription as of 2025-08-31 and a drop greater than 50%.",
+  "transformationPlan": [
+    "find accounts with a subscription active as of 2025-08-31",
+    "count usage_events for each such account in July 2025 and in August 2025",
+    "compute the percent change between the two months",
+    "filter to accounts where usage dropped more than 50%"
+  ],
+  "referenceSql": "WITH active_accounts AS (SELECT DISTINCT account_id FROM subscriptions WHERE started_at <= TIMESTAMP '2025-08-31' AND (ended_at IS NULL OR ended_at > TIMESTAMP '2025-08-31')), usage_counts AS (SELECT account_id, count(*) FILTER (WHERE occurred_at >= TIMESTAMP '2025-07-01' AND occurred_at < TIMESTAMP '2025-08-01') AS prior_month_events, count(*) FILTER (WHERE occurred_at >= TIMESTAMP '2025-08-01' AND occurred_at < TIMESTAMP '2025-08-31') AS recent_month_events FROM usage_events WHERE account_id IN (SELECT account_id FROM active_accounts) GROUP BY account_id) SELECT account_id, prior_month_events, recent_month_events, (recent_month_events - prior_month_events)::DOUBLE / prior_month_events AS pct_change FROM usage_counts WHERE prior_month_events > 0 AND (recent_month_events - prior_month_events)::DOUBLE / prior_month_events < -0.5",
+  "commonWrongAnswers": [],
+  "admittedAt": "2026-09-15T02:01:58.827Z"
+}

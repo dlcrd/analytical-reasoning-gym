@@ -1,0 +1,5 @@
+# Concept steps (Population/Grain/Metric/Transformation Plan) are self-assessed, not auto-graded
+
+Only two Feedback Checklist items are graded deterministically: SQL syntax (does it run) and the final result (does its output match referenceSql's, via `compareResultSets`). The Population/Grain/Metric Definition/Transformation Plan steps aren't compared against anything programmatically — on a miss, the exercise's authored prose for those fields is revealed side-by-side so the student self-assesses which concept they got wrong. The reference SQL itself is never revealed.
+
+We considered making these steps structured (dropdowns/builders) so they could be graded exactly, but that requires re-authoring all 65 already-admitted exercises with structured per-step expected-answers before any UI could be built. Self-assessment ships against the content that already exists and is a legitimate, common learning technique — the trade-off is that "granular checklist" now means "auto-graded overall correctness plus a structured self-check," not "every row independently verified by the app." Revisiting this later means reworking exercise content, not just UI.

@@ -1,0 +1,19 @@
+{
+  "id": "saas-sql_build-l4-smb-signups-q1-2025",
+  "domain": "saas",
+  "mode": "sql_build",
+  "level": 4,
+  "skills": [
+    "filtering",
+    "dates"
+  ],
+  "title": "SMB signups in Q1 2025",
+  "prompt": "How many accounts in the smb segment signed up during Q1 2025 (Jan–Mar)?",
+  "population": "Accounts with segment = smb and signed_up_at in Q1 2025.",
+  "grain": "One row, a single count.",
+  "metricDefinition": null,
+  "transformationPlan": null,
+  "referenceSql": "SELECT count(*) FROM accounts WHERE segment = 'smb' AND signed_up_at >= DATE '2025-01-01' AND signed_up_at < DATE '2025-04-01'",
+  "commonWrongAnswers": [],
+  "admittedAt": "2026-09-15T02:01:58.827Z"
+}

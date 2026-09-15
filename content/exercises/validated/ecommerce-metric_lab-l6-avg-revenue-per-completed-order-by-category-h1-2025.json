@@ -1,0 +1,26 @@
+{
+  "id": "ecommerce-metric_lab-l6-avg-revenue-per-completed-order-by-category-h1-2025",
+  "domain": "ecommerce",
+  "mode": "metric_lab",
+  "level": 6,
+  "skills": [
+    "aggregation",
+    "joins",
+    "denominator",
+    "multi_grain"
+  ],
+  "title": "Average revenue per completed order, by category, H1 2025",
+  "prompt": "Merchandising wants to compare product categories: for completed orders in the first half of 2025 (Jan–Jun), what's the average revenue per order that included each category?",
+  "population": "Completed orders placed between 2025-01-01 and 2025-07-01, and their order_items joined to product category.",
+  "grain": "One row per product category.",
+  "metricDefinition": "sum(quantity * unit_price * (1 - discount)) across matching order_items, divided by count of distinct orders, grouped by category.",
+  "transformationPlan": null,
+  "referenceSql": "SELECT p.category, sum(oi.quantity * oi.unit_price * (1 - oi.discount)) / count(DISTINCT o.order_id) AS avg_revenue_per_order FROM orders o JOIN order_items oi ON oi.order_id = o.order_id JOIN products p ON p.product_id = oi.product_id WHERE o.status = 'completed' AND o.order_date >= DATE '2025-01-01' AND o.order_date < DATE '2025-07-01' GROUP BY p.category",
+  "commonWrongAnswers": [
+    {
+      "sql": "SELECT p.category, avg(oi.quantity * oi.unit_price * (1 - oi.discount)) FROM orders o JOIN order_items oi ON oi.order_id = o.order_id JOIN products p ON p.product_id = oi.product_id WHERE o.status = 'completed' AND o.order_date >= DATE '2025-01-01' AND o.order_date < DATE '2025-07-01' GROUP BY p.category",
+      "whyWrong": "Averages per line item, not per order — an order with 3 items of the same category gets counted 3 times, understating the true per-order average."
+    }
+  ],
+  "admittedAt": "2026-09-15T02:01:58.435Z"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "fintech-sql_build-l7-cumulative-loans-originated-2025",
+  "domain": "fintech",
+  "mode": "sql_build",
+  "level": 7,
+  "skills": [
+    "window_function",
+    "running_totals",
+    "aggregation",
+    "dates"
+  ],
+  "title": "Cumulative loans originated, 2025",
+  "prompt": "Show the cumulative count of new loans originated by month for 2025 — a running total finance can chart.",
+  "population": "Loans originated in 2025.",
+  "grain": "One row per month.",
+  "metricDefinition": "cumulative count of loans originated, by month, through 2025.",
+  "transformationPlan": null,
+  "referenceSql": "WITH monthly AS (SELECT date_trunc('month', originated_at) AS month, count(*) AS new_loans FROM loans WHERE originated_at >= DATE '2025-01-01' AND originated_at < DATE '2026-01-01' GROUP BY date_trunc('month', originated_at)) SELECT month, new_loans, sum(new_loans) OVER (ORDER BY month) AS cumulative_loans FROM monthly ORDER BY month",
+  "commonWrongAnswers": [],
+  "admittedAt": "2026-09-15T02:11:59.830Z"
+}

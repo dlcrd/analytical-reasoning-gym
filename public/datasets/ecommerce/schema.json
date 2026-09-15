@@ -1,0 +1,175 @@
+{
+  "domain": "ecommerce",
+  "tables": [
+    {
+      "name": "customers",
+      "columns": [
+        "customer_id",
+        "signup_date",
+        "region",
+        "segment"
+      ],
+      "rowCount": 300,
+      "sampleRows": [
+        [
+          "1",
+          "DATE '2023-10-19'",
+          "'north'",
+          "'wholesale'"
+        ],
+        [
+          "2",
+          "DATE '2025-05-26'",
+          "'midwest'",
+          "'wholesale'"
+        ],
+        [
+          "3",
+          "DATE '2023-07-05'",
+          "'midwest'",
+          "'wholesale'"
+        ]
+      ]
+    },
+    {
+      "name": "products",
+      "columns": [
+        "product_id",
+        "category",
+        "price",
+        "cost"
+      ],
+      "rowCount": 60,
+      "sampleRows": [
+        [
+          "1",
+          "'electronics'",
+          "419.47",
+          "172.54"
+        ],
+        [
+          "2",
+          "'home'",
+          "361.06",
+          "177.69"
+        ],
+        [
+          "3",
+          "'beauty'",
+          "289.01",
+          "190.88"
+        ]
+      ]
+    },
+    {
+      "name": "orders",
+      "columns": [
+        "order_id",
+        "customer_id",
+        "order_date",
+        "status",
+        "channel"
+      ],
+      "rowCount": 1500,
+      "sampleRows": [
+        [
+          "1",
+          "184",
+          "DATE '2024-12-27'",
+          "'completed'",
+          "'marketplace'"
+        ],
+        [
+          "2",
+          "155",
+          "DATE '2024-12-03'",
+          "'completed'",
+          "'app'"
+        ],
+        [
+          "3",
+          "68",
+          "DATE '2024-07-08'",
+          "'completed'",
+          "'web'"
+        ]
+      ]
+    },
+    {
+      "name": "order_items",
+      "columns": [
+        "order_item_id",
+        "order_id",
+        "product_id",
+        "quantity",
+        "unit_price",
+        "discount"
+      ],
+      "rowCount": 4576,
+      "sampleRows": [
+        [
+          "1",
+          "1",
+          "8",
+          "4",
+          "323.57",
+          "0"
+        ],
+        [
+          "2",
+          "1",
+          "48",
+          "4",
+          "170.66",
+          "0"
+        ],
+        [
+          "3",
+          "2",
+          "12",
+          "4",
+          "163.78",
+          "0"
+        ]
+      ]
+    },
+    {
+      "name": "payments",
+      "columns": [
+        "payment_id",
+        "order_id",
+        "paid_at",
+        "amount",
+        "method",
+        "status"
+      ],
+      "rowCount": 1500,
+      "sampleRows": [
+        [
+          "1",
+          "1",
+          "TIMESTAMP '2024-12-28 18:10:19'",
+          "1976.92",
+          "'bank_transfer'",
+          "'succeeded'"
+        ],
+        [
+          "2",
+          "2",
+          "TIMESTAMP '2024-12-04 10:48:17'",
+          "2995.03",
+          "'bank_transfer'",
+          "'succeeded'"
+        ],
+        [
+          "3",
+          "3",
+          "TIMESTAMP '2024-07-08 14:09:05'",
+          "1817.97",
+          "'card'",
+          "'succeeded'"
+        ]
+      ]
+    }
+  ]
+}

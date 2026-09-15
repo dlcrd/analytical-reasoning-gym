@@ -1,0 +1,31 @@
+{
+  "id": "ecommerce-query_architecture-l8-customers-ramping-up-spend",
+  "domain": "ecommerce",
+  "mode": "query_architecture",
+  "level": 8,
+  "skills": [
+    "ctes",
+    "aggregation",
+    "multi_grain",
+    "joins"
+  ],
+  "title": "Customers ramping up spend in 2025",
+  "prompt": "Identify customers who placed at least 3 completed orders in 2025 AND whose average order value in 2025 is more than double their average order value in 2024. Who are they?",
+  "population": "Completed orders from 2024 and 2025, joined to their order_items.",
+  "grain": "Starts at order_item → order → customer × year (order count, average order value) → final: one row per qualifying customer.",
+  "metricDefinition": "average order value per customer per year = average, across that year's completed orders, of sum(quantity * unit_price * (1 - discount)) per order. Qualifying customers have ≥3 orders in 2025 and 2025 avg order value > 2× their 2024 avg.",
+  "transformationPlan": [
+    "aggregate completed orders + order_items to order-level totals",
+    "aggregate order totals to customer × year (order count, average order value)",
+    "split into a 2024 view and a 2025 view, joined on customer_id",
+    "filter to customers with ≥3 orders in 2025 and 2025 avg order value more than double the 2024 avg"
+  ],
+  "referenceSql": "WITH order_value AS (SELECT o.order_id, o.customer_id, year(o.order_date) AS yr, sum(oi.quantity * oi.unit_price * (1 - oi.discount)) AS order_total FROM orders o JOIN order_items oi ON oi.order_id = o.order_id WHERE o.status = 'completed' GROUP BY o.order_id, o.customer_id, year(o.order_date)), customer_year AS (SELECT customer_id, yr, count(*) AS order_count, avg(order_total) AS avg_order_value FROM order_value GROUP BY customer_id, yr), y2024 AS (SELECT customer_id, avg_order_value FROM customer_year WHERE yr = 2024), y2025 AS (SELECT customer_id, order_count, avg_order_value FROM customer_year WHERE yr = 2025) SELECT y2025.customer_id, y2025.order_count, y2024.avg_order_value AS avg_2024, y2025.avg_order_value AS avg_2025 FROM y2025 JOIN y2024 ON y2024.customer_id = y2025.customer_id WHERE y2025.order_count >= 3 AND y2025.avg_order_value > 2 * y2024.avg_order_value",
+  "commonWrongAnswers": [
+    {
+      "sql": "SELECT customer_id, count(*) FROM orders WHERE status = 'completed' AND order_date >= DATE '2025-01-01' GROUP BY customer_id HAVING count(*) >= 3",
+      "whyWrong": "Only checks the order-count condition for 2025 — ignores the average-order-value comparison against 2024 entirely, so it answers a different, simpler question."
+    }
+  ],
+  "admittedAt": "2026-09-15T02:01:58.436Z"
+}

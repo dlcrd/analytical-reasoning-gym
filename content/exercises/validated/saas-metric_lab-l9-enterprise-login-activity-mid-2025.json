@@ -1,0 +1,26 @@
+{
+  "id": "saas-metric_lab-l9-enterprise-login-activity-mid-2025",
+  "domain": "saas",
+  "mode": "metric_lab",
+  "level": 9,
+  "skills": [
+    "ctes",
+    "subqueries",
+    "population",
+    "denominator",
+    "dates"
+  ],
+  "title": "Top-tier plan accounts with recent login activity",
+  "prompt": "Among accounts on the Enterprise or Enterprise Plus plan as of 2025-06-30, what fraction logged in at least once in the 30 days before that date?",
+  "population": "Accounts with an Enterprise or Enterprise Plus subscription active as of 2025-06-30.",
+  "grain": "One row, a single rate.",
+  "metricDefinition": "accounts (top-tier plan active on 2025-06-30) with ≥1 login usage_event in [2025-06-01, 2025-06-30), divided by all such accounts.",
+  "transformationPlan": [
+    "find accounts with an Enterprise or Enterprise Plus subscription active as of 2025-06-30",
+    "for each, check for a login event in the 30 days before that date",
+    "compute the active-login rate"
+  ],
+  "referenceSql": "WITH top_tier AS (SELECT DISTINCT s.account_id FROM subscriptions s JOIN plans p ON p.plan_id = s.plan_id WHERE p.name IN ('Enterprise', 'Enterprise Plus') AND s.started_at <= TIMESTAMP '2025-06-30' AND (s.ended_at IS NULL OR s.ended_at > TIMESTAMP '2025-06-30')) SELECT count(*) FILTER (WHERE EXISTS (SELECT 1 FROM usage_events u WHERE u.account_id = t.account_id AND u.event_type = 'login' AND u.occurred_at >= TIMESTAMP '2025-06-01' AND u.occurred_at < TIMESTAMP '2025-06-30'))::DOUBLE / count(*) AS active_login_rate FROM top_tier t",
+  "commonWrongAnswers": [],
+  "admittedAt": "2026-09-15T02:12:00.019Z"
+}

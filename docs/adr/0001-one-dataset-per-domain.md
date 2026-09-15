@@ -1,0 +1,3 @@
+# One shared Dataset per Domain, not per Exercise
+
+The original PRD's Case Generator schema lists `dataset` as a per-case field, which could suggest each Exercise gets its own tables. We're instead giving each of the 3 Domains (e-commerce, SaaS, fintech) exactly one shared multi-table Dataset, reused by every Exercise in that Domain regardless of Mode or Level. Difficulty comes from the question asked (more joins, more ambiguity, harder Grain), not from swapping the underlying schema. This keeps content authoring bounded (3 schemas to build and validate, not up to 65) and lets exercises reference and build on a stable, known schema. Revisiting this later would mean re-authoring or migrating exercises already written against the shared schema.

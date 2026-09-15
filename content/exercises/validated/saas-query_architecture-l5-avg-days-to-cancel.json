@@ -1,0 +1,24 @@
+{
+  "id": "saas-query_architecture-l5-avg-days-to-cancel",
+  "domain": "saas",
+  "mode": "query_architecture",
+  "level": 5,
+  "skills": [
+    "filtering",
+    "aggregation",
+    "dates"
+  ],
+  "title": "Average days from subscription start to cancellation",
+  "prompt": "For subscriptions that were canceled, what's the average number of days between when they started and when they ended?",
+  "population": "Subscriptions with status = canceled and a non-null ended_at.",
+  "grain": "One row, a single average.",
+  "metricDefinition": "average of date_diff('day', started_at, ended_at), for canceled subscriptions.",
+  "transformationPlan": [
+    "filter subscriptions to status = canceled with a non-null ended_at",
+    "compute days between started_at and ended_at per subscription",
+    "average across all canceled subscriptions"
+  ],
+  "referenceSql": "SELECT avg(date_diff('day', started_at, ended_at)) AS avg_days_to_cancel FROM subscriptions WHERE status = 'canceled' AND ended_at IS NOT NULL",
+  "commonWrongAnswers": [],
+  "admittedAt": "2026-09-15T02:12:00.021Z"
+}

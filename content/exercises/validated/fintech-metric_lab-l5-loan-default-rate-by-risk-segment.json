@@ -1,0 +1,25 @@
+{
+  "id": "fintech-metric_lab-l5-loan-default-rate-by-risk-segment",
+  "domain": "fintech",
+  "mode": "metric_lab",
+  "level": 5,
+  "skills": [
+    "joins",
+    "aggregation",
+    "denominator"
+  ],
+  "title": "Loan default rate by risk segment",
+  "prompt": "Risk wants to know: which customer risk segment has the highest loan default rate?",
+  "population": "All loans, joined to their customer's risk_segment.",
+  "grain": "One row per risk segment.",
+  "metricDefinition": "defaulted loans / total loans, grouped by customer risk_segment.",
+  "transformationPlan": null,
+  "referenceSql": "SELECT c.risk_segment, count(*) FILTER (WHERE l.status = 'default')::DOUBLE / count(*) AS default_rate FROM loans l JOIN customers c ON c.customer_id = l.customer_id GROUP BY c.risk_segment",
+  "commonWrongAnswers": [
+    {
+      "sql": "SELECT c.risk_segment, count(*) FILTER (WHERE l.status = 'default') FROM loans l JOIN customers c ON c.customer_id = l.customer_id GROUP BY c.risk_segment",
+      "whyWrong": "Returns the default count, not the rate — segments with more loans overall will look worse even if their true default rate is lower."
+    }
+  ],
+  "admittedAt": "2026-09-15T02:01:58.616Z"
+}

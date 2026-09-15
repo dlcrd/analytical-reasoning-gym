@@ -1,0 +1,20 @@
+{
+  "id": "ecommerce-granularity_trainer-l4-monthly-revenue-per-customer-2024",
+  "domain": "ecommerce",
+  "mode": "granularity_trainer",
+  "level": 4,
+  "skills": [
+    "grain",
+    "aggregation",
+    "dates"
+  ],
+  "title": "Monthly revenue per customer, 2024",
+  "prompt": "Finance wants monthly revenue per customer for 2024, to spot who's ramping up spend. Order_items start at one row per line item — what does a row need to represent once you've built what finance asked for?",
+  "population": "Completed orders placed in 2024 and their order_items.",
+  "grain": "Starts at one row per order item; ends at one row per customer per month.",
+  "metricDefinition": "sum(quantity * unit_price * (1 - discount)) per customer per month, for completed orders in 2024.",
+  "transformationPlan": null,
+  "referenceSql": "SELECT o.customer_id, date_trunc('month', o.order_date) AS month, sum(oi.quantity * oi.unit_price * (1 - oi.discount)) AS revenue FROM orders o JOIN order_items oi ON oi.order_id = o.order_id WHERE o.status = 'completed' AND o.order_date >= DATE '2024-01-01' AND o.order_date < DATE '2025-01-01' GROUP BY o.customer_id, date_trunc('month', o.order_date)",
+  "commonWrongAnswers": [],
+  "admittedAt": "2026-09-15T02:01:58.435Z"
+}

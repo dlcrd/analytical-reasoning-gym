@@ -1,0 +1,21 @@
+{
+  "id": "fintech-sql_build-l8-rolling-3mo-transaction-avg-2025",
+  "domain": "fintech",
+  "mode": "sql_build",
+  "level": 8,
+  "skills": [
+    "window_function",
+    "rolling_windows",
+    "aggregation",
+    "ctes"
+  ],
+  "title": "Rolling 3-month average transaction volume per account, 2025",
+  "prompt": "For each account, show its 3-month rolling average transaction volume for each month of 2025.",
+  "population": "Transactions from Nov 2024 through 2025 (two prior months are needed to seed the first 2025 rolling averages), aggregated to account × month.",
+  "grain": "One row per account per month (2025 months in the final output).",
+  "metricDefinition": "3-month rolling average of monthly transaction volume, per account, for 2025.",
+  "transformationPlan": null,
+  "referenceSql": "WITH monthly AS (SELECT account_id, date_trunc('month', occurred_at) AS month, sum(amount) AS month_total FROM transactions WHERE occurred_at >= TIMESTAMP '2024-11-01' AND occurred_at < TIMESTAMP '2026-01-01' GROUP BY account_id, date_trunc('month', occurred_at)) SELECT account_id, month, month_total, avg(month_total) OVER (PARTITION BY account_id ORDER BY month ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) AS rolling_3mo_avg FROM monthly WHERE month >= DATE '2025-01-01' ORDER BY account_id, month",
+  "commonWrongAnswers": [],
+  "admittedAt": "2026-09-15T02:01:58.618Z"
+}

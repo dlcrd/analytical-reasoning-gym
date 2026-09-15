@@ -1,0 +1,28 @@
+{
+  "id": "fintech-query_architecture-l7-current-loans-with-missed-payment",
+  "domain": "fintech",
+  "mode": "query_architecture",
+  "level": 7,
+  "skills": [
+    "filtering",
+    "subqueries"
+  ],
+  "title": "Current loans with at least one missed payment",
+  "prompt": "Which loans are still marked 'current' (not yet defaulted or paid off) but already have at least one missed payment? These are the at-risk current loans.",
+  "population": "Loans with status = current, checked against their loan_payments.",
+  "grain": "One row per at-risk loan.",
+  "metricDefinition": null,
+  "transformationPlan": [
+    "find loans with status = current",
+    "find which of those loans have at least one missed payment",
+    "join to customers for context"
+  ],
+  "referenceSql": "SELECT l.customer_id, l.loan_id, l.principal FROM loans l WHERE l.status = 'current' AND EXISTS (SELECT 1 FROM loan_payments lp WHERE lp.loan_id = l.loan_id AND lp.status = 'missed')",
+  "commonWrongAnswers": [
+    {
+      "sql": "SELECT l.customer_id, l.loan_id, l.principal FROM loans l JOIN loan_payments lp ON lp.loan_id = l.loan_id WHERE l.status = 'current' AND lp.status = 'missed'",
+      "whyWrong": "Works but produces one row per missed payment instead of one row per loan — a loan with 2 missed payments shows up twice, breaking the stated grain."
+    }
+  ],
+  "admittedAt": "2026-09-15T02:01:58.617Z"
+}

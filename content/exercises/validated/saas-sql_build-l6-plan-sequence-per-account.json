@@ -1,0 +1,18 @@
+{
+  "id": "saas-sql_build-l6-plan-sequence-per-account",
+  "domain": "saas",
+  "mode": "sql_build",
+  "level": 6,
+  "skills": [
+    "aggregation"
+  ],
+  "title": "Plan sequence per multi-subscription account",
+  "prompt": "For accounts that have had more than one subscription, list the plan_ids they held, in the order they started.",
+  "population": "Accounts with more than one subscription.",
+  "grain": "One row per account, holding an ordered list.",
+  "metricDefinition": null,
+  "transformationPlan": null,
+  "referenceSql": "SELECT account_id, array_agg(plan_id ORDER BY started_at) AS plan_sequence FROM subscriptions GROUP BY account_id HAVING count(*) > 1",
+  "commonWrongAnswers": [],
+  "admittedAt": "2026-09-15T02:12:00.022Z"
+}

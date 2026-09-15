@@ -1,0 +1,26 @@
+{
+  "id": "saas-query_architecture-l8-invoice-total-exceeds-plan-price-2025",
+  "domain": "saas",
+  "mode": "query_architecture",
+  "level": 8,
+  "skills": [
+    "ctes",
+    "joins",
+    "aggregation",
+    "filtering"
+  ],
+  "title": "Accounts invoiced more than their current plan's annual price in 2025",
+  "prompt": "Find accounts whose total paid invoice amount in 2025 exceeds what their current plan's monthly_price × 12 would suggest — a possible plan mismatch or add-on charges worth investigating.",
+  "population": "Paid invoices issued in 2025, and each account's subscription active at year-end 2025 (for its plan price).",
+  "grain": "One row per flagged account.",
+  "metricDefinition": "2025 paid invoice total vs. (current plan monthly_price × 12); flagged when the total exceeds that expected annual amount.",
+  "transformationPlan": [
+    "sum 2025 paid invoice amounts per account",
+    "join to each account's subscription active at year-end 2025, for its plan's monthly_price",
+    "compare the invoice total to monthly_price × 12",
+    "keep accounts where the total exceeds that expected amount"
+  ],
+  "referenceSql": "WITH invoice_totals AS (SELECT account_id, sum(amount) AS total_2025 FROM invoices WHERE status = 'paid' AND issued_at >= TIMESTAMP '2025-01-01' AND issued_at < TIMESTAMP '2026-01-01' GROUP BY account_id), current_plan AS (SELECT s.account_id, p.monthly_price FROM subscriptions s JOIN plans p ON p.plan_id = s.plan_id WHERE s.started_at <= TIMESTAMP '2025-12-31' AND (s.ended_at IS NULL OR s.ended_at > TIMESTAMP '2025-12-31')) SELECT it.account_id, it.total_2025, cp.monthly_price * 12 AS expected_annual FROM invoice_totals it JOIN current_plan cp ON cp.account_id = it.account_id WHERE it.total_2025 > cp.monthly_price * 12",
+  "commonWrongAnswers": [],
+  "admittedAt": "2026-09-15T02:12:00.021Z"
+}

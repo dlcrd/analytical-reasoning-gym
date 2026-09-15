@@ -1,0 +1,24 @@
+{
+  "id": "ecommerce-sql_build-l3-marketplace-completed-orders",
+  "domain": "ecommerce",
+  "mode": "sql_build",
+  "level": 3,
+  "skills": [
+    "filtering",
+    "dates"
+  ],
+  "title": "Completed marketplace orders in 2025",
+  "prompt": "The marketplace team wants to know how many orders placed through the marketplace channel in 2025 actually completed (not cancelled or refunded). How many is that?",
+  "population": "Orders placed on or after 2025-01-01 through the marketplace channel.",
+  "grain": "One row, a single count.",
+  "metricDefinition": null,
+  "transformationPlan": null,
+  "referenceSql": "SELECT count(*) AS completed_orders FROM orders WHERE channel = 'marketplace' AND status = 'completed' AND order_date >= DATE '2025-01-01'",
+  "commonWrongAnswers": [
+    {
+      "sql": "SELECT count(*) FROM orders WHERE channel = 'marketplace'",
+      "whyWrong": "Ignores the completed-status and 2025 filters, so it counts every marketplace order ever, including cancelled and refunded ones."
+    }
+  ],
+  "admittedAt": "2026-09-15T01:43:58.098Z"
+}

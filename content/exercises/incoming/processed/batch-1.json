@@ -1,0 +1,53 @@
+[
+  {
+    "id": "ecommerce-sql_build-l3-marketplace-completed-orders",
+    "domain": "ecommerce",
+    "mode": "sql_build",
+    "level": 3,
+    "skills": ["filtering", "dates"],
+    "title": "Completed marketplace orders in 2025",
+    "prompt": "The marketplace team wants to know how many orders placed through the marketplace channel in 2025 actually completed (not cancelled or refunded). How many is that?",
+    "population": "Orders placed on or after 2025-01-01 through the marketplace channel.",
+    "grain": "One row, a single count.",
+    "metricDefinition": null,
+    "transformationPlan": null,
+    "referenceSql": "SELECT count(*) AS completed_orders FROM orders WHERE channel = 'marketplace' AND status = 'completed' AND order_date >= DATE '2025-01-01'",
+    "commonWrongAnswers": [
+      { "sql": "SELECT count(*) FROM orders WHERE channel = 'marketplace'", "whyWrong": "Ignores the completed-status and 2025 filters, so it counts every marketplace order ever, including cancelled and refunded ones." }
+    ]
+  },
+  {
+    "id": "ecommerce-sql_build-l5-refund-rate-by-channel",
+    "domain": "ecommerce",
+    "mode": "sql_build",
+    "level": 5,
+    "skills": ["aggregation", "denominator"],
+    "title": "Refund rate by channel",
+    "prompt": "Leadership wants to know which sales channel has the highest refund rate. For each channel, what share of orders end up refunded?",
+    "population": "All orders, across all channels and dates.",
+    "grain": "One row per channel.",
+    "metricDefinition": "refunded orders / total orders, grouped by channel.",
+    "transformationPlan": null,
+    "referenceSql": "SELECT channel, count(*) FILTER (WHERE status = 'refunded')::DOUBLE / count(*) AS refund_rate FROM orders GROUP BY channel",
+    "commonWrongAnswers": [
+      { "sql": "SELECT channel, count(*) FILTER (WHERE status = 'refunded') FROM orders GROUP BY channel", "whyWrong": "Returns the refund count, not the rate — no denominator, so channels can't be fairly compared." }
+    ]
+  },
+  {
+    "id": "ecommerce-sql_build-l6-avg-order-value-by-segment",
+    "domain": "ecommerce",
+    "mode": "sql_build",
+    "level": 6,
+    "skills": ["joins", "aggregation", "subqueries"],
+    "title": "Average order value by customer segment",
+    "prompt": "Are wholesale customers placing bigger orders than retail customers, on average? Compare average order value (after discounts) by customer segment.",
+    "population": "All orders with at least one order item, joined to their customer's segment.",
+    "grain": "One row per customer segment.",
+    "metricDefinition": "average, per order, of sum(quantity * unit_price * (1 - discount)) across its order_items, grouped by customer segment.",
+    "transformationPlan": null,
+    "referenceSql": "SELECT c.segment, avg(order_totals.total) AS avg_order_value FROM customers c JOIN orders o ON o.customer_id = c.customer_id JOIN (SELECT order_id, sum(quantity * unit_price * (1 - discount)) AS total FROM order_items GROUP BY order_id) order_totals ON order_totals.order_id = o.order_id GROUP BY c.segment",
+    "commonWrongAnswers": [
+      { "sql": "SELECT c.segment, avg(oi.unit_price) FROM customers c JOIN orders o ON o.customer_id = c.customer_id JOIN order_items oi ON oi.order_id = o.order_id GROUP BY c.segment", "whyWrong": "Averages line-item unit price directly, ignoring quantity and discount and mixing the order_items grain into a per-order metric — a classic grain mistake." }
+    ]
+  }
+]

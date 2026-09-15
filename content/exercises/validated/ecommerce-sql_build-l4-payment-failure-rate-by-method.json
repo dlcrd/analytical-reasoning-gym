@@ -1,0 +1,19 @@
+{
+  "id": "ecommerce-sql_build-l4-payment-failure-rate-by-method",
+  "domain": "ecommerce",
+  "mode": "sql_build",
+  "level": 4,
+  "skills": [
+    "aggregation",
+    "denominator"
+  ],
+  "title": "Payment failure rate by method",
+  "prompt": "For each payment method, what's the failure rate (failed payments divided by all payments using that method)?",
+  "population": "All payments.",
+  "grain": "One row per payment method.",
+  "metricDefinition": "failed payments / total payments, grouped by method.",
+  "transformationPlan": null,
+  "referenceSql": "SELECT method, count(*) FILTER (WHERE status = 'failed')::DOUBLE / count(*) AS failure_rate FROM payments GROUP BY method",
+  "commonWrongAnswers": [],
+  "admittedAt": "2026-09-15T02:11:59.619Z"
+}

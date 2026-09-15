@@ -1,0 +1,24 @@
+{
+  "id": "ecommerce-sql_build-l8-customers-all-three-channels",
+  "domain": "ecommerce",
+  "mode": "sql_build",
+  "level": 8,
+  "skills": [
+    "aggregation",
+    "filtering"
+  ],
+  "title": "Customers who have ordered through all three channels",
+  "prompt": "Which customers have, at some point, placed an order through all three channels (web, app, and marketplace)?",
+  "population": "All orders.",
+  "grain": "One row per qualifying customer.",
+  "metricDefinition": null,
+  "transformationPlan": null,
+  "referenceSql": "SELECT customer_id FROM orders GROUP BY customer_id HAVING count(DISTINCT channel) = 3",
+  "commonWrongAnswers": [
+    {
+      "sql": "SELECT customer_id FROM orders WHERE channel IN ('web', 'app', 'marketplace') GROUP BY customer_id",
+      "whyWrong": "The IN filter just keeps rows with any of the three channels (which is all of them, since those are the only channel values) — it never actually checks that a customer used all three, missing the HAVING count(DISTINCT channel) = 3 condition entirely."
+    }
+  ],
+  "admittedAt": "2026-09-15T02:11:59.619Z"
+}

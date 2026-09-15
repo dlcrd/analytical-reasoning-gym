@@ -1,0 +1,32 @@
+{
+  "id": "fintech-sql_build-l10-poor-payment-track-record-by-value",
+  "domain": "fintech",
+  "mode": "sql_build",
+  "level": 10,
+  "skills": [
+    "ctes",
+    "joins",
+    "aggregation",
+    "denominator",
+    "conditional_aggregation"
+  ],
+  "title": "Customers with a poor payment track record by dollar value",
+  "prompt": "For customers with a loan, compute what share of their total loan_payments dollar amount was paid on time. Which customers are below 50% — poor by value, not just by payment count?",
+  "population": "Customers with at least one loan, and all loan_payments across their loans.",
+  "grain": "One row per flagged customer.",
+  "metricDefinition": "sum(on-time loan_payments amount) / sum(all loan_payments amount), per customer with a loan; flagged when below 50%.",
+  "transformationPlan": [
+    "sum loan principal per customer (for context)",
+    "sum on-time payment amount and total payment amount per customer, across all their loans",
+    "compute the on-time share by dollar value",
+    "keep customers below 50%"
+  ],
+  "referenceSql": "WITH customer_loans AS (SELECT customer_id, sum(principal) AS total_principal FROM loans GROUP BY customer_id), payment_totals AS (SELECT l.customer_id, sum(lp.amount) FILTER (WHERE lp.status = 'on_time') AS on_time_amount, sum(lp.amount) AS total_payment_amount FROM loans l JOIN loan_payments lp ON lp.loan_id = l.loan_id GROUP BY l.customer_id) SELECT cl.customer_id, cl.total_principal, pt.on_time_amount, pt.total_payment_amount, pt.on_time_amount / pt.total_payment_amount AS on_time_share FROM customer_loans cl JOIN payment_totals pt ON pt.customer_id = cl.customer_id WHERE pt.on_time_amount / pt.total_payment_amount < 0.5",
+  "commonWrongAnswers": [
+    {
+      "sql": "SELECT l.customer_id, count(*) FILTER (WHERE lp.status = 'on_time')::DOUBLE / count(*) AS on_time_share FROM loans l JOIN loan_payments lp ON lp.loan_id = l.loan_id GROUP BY l.customer_id HAVING count(*) FILTER (WHERE lp.status = 'on_time')::DOUBLE / count(*) < 0.5",
+      "whyWrong": "Measures the on-time rate by PAYMENT COUNT, not by dollar amount — a customer could make many small on-time payments and one huge missed one and still look fine here, which is exactly the by-value distinction the question asks for."
+    }
+  ],
+  "admittedAt": "2026-09-15T02:11:59.830Z"
+}

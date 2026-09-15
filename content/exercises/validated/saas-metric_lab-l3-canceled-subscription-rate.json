@@ -1,0 +1,19 @@
+{
+  "id": "saas-metric_lab-l3-canceled-subscription-rate",
+  "domain": "saas",
+  "mode": "metric_lab",
+  "level": 3,
+  "skills": [
+    "metric_definition",
+    "denominator"
+  ],
+  "title": "Canceled subscription rate",
+  "prompt": "Of all subscriptions ever created, what fraction are currently canceled?",
+  "population": "All subscriptions.",
+  "grain": "One row, a single rate.",
+  "metricDefinition": "canceled subscriptions / total subscriptions.",
+  "transformationPlan": null,
+  "referenceSql": "SELECT count(*) FILTER (WHERE status = 'canceled')::DOUBLE / count(*) AS canceled_rate FROM subscriptions",
+  "commonWrongAnswers": [],
+  "admittedAt": "2026-09-15T02:12:00.018Z"
+}

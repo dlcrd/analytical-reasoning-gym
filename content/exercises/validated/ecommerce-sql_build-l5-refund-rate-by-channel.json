@@ -1,0 +1,24 @@
+{
+  "id": "ecommerce-sql_build-l5-refund-rate-by-channel",
+  "domain": "ecommerce",
+  "mode": "sql_build",
+  "level": 5,
+  "skills": [
+    "aggregation",
+    "denominator"
+  ],
+  "title": "Refund rate by channel",
+  "prompt": "Leadership wants to know which sales channel has the highest refund rate. For each channel, what share of orders end up refunded?",
+  "population": "All orders, across all channels and dates.",
+  "grain": "One row per channel.",
+  "metricDefinition": "refunded orders / total orders, grouped by channel.",
+  "transformationPlan": null,
+  "referenceSql": "SELECT channel, count(*) FILTER (WHERE status = 'refunded')::DOUBLE / count(*) AS refund_rate FROM orders GROUP BY channel",
+  "commonWrongAnswers": [
+    {
+      "sql": "SELECT channel, count(*) FILTER (WHERE status = 'refunded') FROM orders GROUP BY channel",
+      "whyWrong": "Returns the refund count, not the rate — no denominator, so channels can't be fairly compared."
+    }
+  ],
+  "admittedAt": "2026-09-15T01:43:58.099Z"
+}

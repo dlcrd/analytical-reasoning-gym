@@ -1,0 +1,18 @@
+{
+  "id": "fintech-sql_build-l5-avg-interest-rate-by-loan-status",
+  "domain": "fintech",
+  "mode": "sql_build",
+  "level": 5,
+  "skills": [
+    "aggregation"
+  ],
+  "title": "Average interest rate by loan status",
+  "prompt": "For each loan status, what's the average interest_rate?",
+  "population": "All loans.",
+  "grain": "One row per loan status.",
+  "metricDefinition": "average(interest_rate), grouped by loan status.",
+  "transformationPlan": null,
+  "referenceSql": "SELECT status, avg(interest_rate) AS avg_interest_rate FROM loans GROUP BY status",
+  "commonWrongAnswers": [],
+  "admittedAt": "2026-09-15T02:11:59.830Z"
+}

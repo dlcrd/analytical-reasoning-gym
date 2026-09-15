@@ -1,0 +1,26 @@
+{
+  "id": "saas-granularity_trainer-l7-plan-share-of-monthly-revenue-2025",
+  "domain": "saas",
+  "mode": "granularity_trainer",
+  "level": 7,
+  "skills": [
+    "multi_grain",
+    "ctes",
+    "aggregation",
+    "denominator",
+    "joins"
+  ],
+  "title": "Each plan's share of monthly paid revenue, 2025",
+  "prompt": "For each plan, what share of that month's total paid invoice revenue did it represent, month by month across 2025? What grain do you need before you can compute a share of a total?",
+  "population": "Paid invoices issued in 2025, joined through subscriptions to plans.",
+  "grain": "Two stages: plan × month revenue, and month total (all-plans) revenue — final result at plan × month with a share-of-month column.",
+  "metricDefinition": "plan_month_revenue / month_total_revenue, for each plan and month in 2025.",
+  "transformationPlan": [
+    "aggregate paid invoices to plan × month revenue via subscriptions",
+    "aggregate plan × month revenue up to month totals",
+    "join and divide"
+  ],
+  "referenceSql": "WITH plan_month AS (SELECT s.plan_id, date_trunc('month', i.issued_at) AS month, sum(i.amount) AS revenue FROM invoices i JOIN subscriptions s ON s.subscription_id = i.subscription_id WHERE i.status = 'paid' AND i.issued_at >= TIMESTAMP '2025-01-01' AND i.issued_at < TIMESTAMP '2026-01-01' GROUP BY s.plan_id, date_trunc('month', i.issued_at)), month_total AS (SELECT month, sum(revenue) AS total_revenue FROM plan_month GROUP BY month) SELECT pm.plan_id, pm.month, pm.revenue, pm.revenue / mt.total_revenue AS share_of_month FROM plan_month pm JOIN month_total mt ON mt.month = pm.month",
+  "commonWrongAnswers": [],
+  "admittedAt": "2026-09-15T02:12:00.021Z"
+}

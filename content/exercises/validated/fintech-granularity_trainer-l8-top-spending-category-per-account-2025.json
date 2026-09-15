@@ -1,0 +1,25 @@
+{
+  "id": "fintech-granularity_trainer-l8-top-spending-category-per-account-2025",
+  "domain": "fintech",
+  "mode": "granularity_trainer",
+  "level": 8,
+  "skills": [
+    "multi_grain",
+    "window_function",
+    "ranking",
+    "aggregation"
+  ],
+  "title": "Top spending category per account, 2025",
+  "prompt": "For each account, which spending category (from debit transactions) had the highest total in 2025? You'll need account × category totals before you can rank within account.",
+  "population": "Debit transactions in 2025.",
+  "grain": "transaction → account × category totals → ranked within account → final: one row per account (its top category).",
+  "metricDefinition": "sum(amount) per account per category (debit only, 2025); the category with the highest total per account.",
+  "transformationPlan": [
+    "aggregate 2025 debit transactions to account × category totals",
+    "rank categories within each account by total, descending",
+    "keep only rank 1 per account"
+  ],
+  "referenceSql": "WITH account_category AS (SELECT account_id, category, sum(amount) AS total_amount FROM transactions WHERE type = 'debit' AND occurred_at >= TIMESTAMP '2025-01-01' AND occurred_at < TIMESTAMP '2026-01-01' GROUP BY account_id, category), ranked AS (SELECT account_id, category, total_amount, row_number() OVER (PARTITION BY account_id ORDER BY total_amount DESC) AS rn FROM account_category) SELECT account_id, category, total_amount FROM ranked WHERE rn = 1",
+  "commonWrongAnswers": [],
+  "admittedAt": "2026-09-15T02:11:59.829Z"
+}

@@ -1,0 +1,26 @@
+{
+  "id": "fintech-metric_lab-l10-clean-payment-history-pre-2023-cohort",
+  "domain": "fintech",
+  "mode": "metric_lab",
+  "level": 10,
+  "skills": [
+    "ctes",
+    "subqueries",
+    "population",
+    "denominator"
+  ],
+  "title": "Clean payment-history rate, pre-2023 customers with a loan",
+  "prompt": "Among customers who joined before 2023 and have at least one loan, what fraction have NEVER had a late or missed payment across any of their loans?",
+  "population": "Customers who joined before 2023-01-01 and have at least one loan.",
+  "grain": "One row, a single rate.",
+  "metricDefinition": "customers (joined before 2023, has ≥1 loan) with zero late/missed loan_payments across all their loans, divided by all such customers.",
+  "transformationPlan": [
+    "find customers who joined before 2023 and have ≥1 loan",
+    "find which customers have ever had a late or missed loan payment, on any loan",
+    "count loan-holding pre-2023 customers not in that bad-payment set",
+    "divide by all loan-holding pre-2023 customers"
+  ],
+  "referenceSql": "WITH loan_customers AS (SELECT DISTINCT customer_id FROM loans WHERE customer_id IN (SELECT customer_id FROM customers WHERE joined_at < DATE '2023-01-01')), bad_payment_customers AS (SELECT DISTINCT l.customer_id FROM loans l JOIN loan_payments lp ON lp.loan_id = l.loan_id WHERE lp.status IN ('late', 'missed')) SELECT count(*) FILTER (WHERE lc.customer_id NOT IN (SELECT customer_id FROM bad_payment_customers))::DOUBLE / count(*) AS clean_payment_rate FROM loan_customers lc",
+  "commonWrongAnswers": [],
+  "admittedAt": "2026-09-15T02:11:59.829Z"
+}
