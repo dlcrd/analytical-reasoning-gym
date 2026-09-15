@@ -1,7 +1,7 @@
 import * as duckdb from "@duckdb/duckdb-wasm";
 import type { Domain } from "@/db/schema";
-import type { DomainSchemaDescription } from "../../scripts/datasets/export";
 import { arrowTableToQueryResult } from "./duckdb-arrow";
+import { getDomainSchema } from "./dataset-schema";
 import type { QueryResult } from "./grading";
 
 /**
@@ -31,20 +31,17 @@ const loadedDomains = new Set<Domain>();
 async function ensureDomainLoaded(db: duckdb.AsyncDuckDB, domain: Domain): Promise<void> {
   if (loadedDomains.has(domain)) return;
 
-  const schema: DomainSchemaDescription = await fetch(`/datasets/${domain}/schema.json`).then(
-    (response) => response.json(),
-  );
+  const schema = await getDomainSchema(domain);
 
   const connection = await db.connect();
   try {
     for (const table of schema.tables) {
       const registeredName = `${domain}__${table.name}`;
-      await db.registerFileURL(
-        registeredName,
-        `/datasets/${domain}/${table.name}.parquet`,
-        duckdb.DuckDBDataProtocol.HTTP,
-        false,
-      );
+      // Must be absolute: DuckDB-WASM resolves this URL from inside its worker, whose
+      // location is the CDN-hosted worker script, not this page — a relative path
+      // resolves against the wrong origin and fails to fetch.
+      const absoluteUrl = new URL(`/datasets/${domain}/${table.name}.parquet`, window.location.origin).toString();
+      await db.registerFileURL(registeredName, absoluteUrl, duckdb.DuckDBDataProtocol.HTTP, false);
       await connection.query(
         `CREATE VIEW IF NOT EXISTS ${table.name} AS SELECT * FROM read_parquet('${registeredName}')`,
       );

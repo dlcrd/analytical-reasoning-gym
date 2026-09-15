@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { SchemaPanel } from "@/components/SchemaPanel";
+import { SqlEditor } from "@/components/SqlEditor";
 import type { Domain, Mode } from "@/db/schema";
 import type { QueryResult } from "@/lib/grading";
 
@@ -216,14 +218,8 @@ export function PracticeSession({ mode }: { mode: Mode }) {
         <div className="flex flex-col gap-4">
           <h2 className="text-lg font-medium text-zinc-900 dark:text-zinc-50">{exercise.title}</h2>
           <p className="whitespace-pre-wrap text-zinc-800 dark:text-zinc-100">{exercise.prompt}</p>
-          <textarea
-            value={sql}
-            onChange={(e) => setSql(e.target.value)}
-            rows={8}
-            spellCheck={false}
-            className="w-full rounded border border-zinc-300 bg-white p-3 font-mono text-sm text-zinc-900 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
-            placeholder={`SELECT ...\nFROM ...`}
-          />
+          <SchemaPanel domain={exercise.domain} />
+          <SqlEditor value={sql} onChange={setSql} placeholder={`SELECT ...\nFROM ...`} />
           <div className="flex gap-3">
             <button onClick={runSqlAgainstDataset} className={SECONDARY_BUTTON}>
               Rodar
