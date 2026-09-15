@@ -34,6 +34,12 @@ const MODE_LABELS: Record<Mode, string> = {
   sql_build: "SQL Build",
 };
 
+const PRIMARY_BUTTON =
+  "w-fit rounded-full bg-zinc-900 px-5 py-2.5 text-white hover:bg-zinc-700 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300";
+const SECONDARY_BUTTON =
+  "rounded-full border border-zinc-300 px-5 py-2 text-zinc-900 hover:bg-zinc-100 dark:border-zinc-600 dark:text-zinc-100 dark:hover:bg-zinc-800";
+const CARD = "rounded border border-zinc-200 dark:border-zinc-700";
+
 type Phase = "intro" | "concept" | "sql" | "graded" | "finished";
 
 export default function PlacementPage() {
@@ -161,27 +167,28 @@ export default function PlacementPage() {
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-6 px-6 py-12">
-      <h1 className="text-2xl font-semibold">Teste de Nivelamento</h1>
+      <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">Teste de Nivelamento</h1>
 
-      {error && <p className="rounded bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+      {error && (
+        <p className="rounded bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
+          {error}
+        </p>
+      )}
 
       {phase === "intro" && (
         <div className="flex flex-col gap-4">
-          <p className="text-zinc-600">
+          <p className="text-zinc-600 dark:text-zinc-300">
             16 exercícios (2 por modo em L4, 2 por modo em L5) para definir seu nível inicial em cada um
             dos 4 modos. Sem dicas — cada acerto conta como sem ajuda.
           </p>
-          <button
-            onClick={startTest}
-            className="w-fit rounded-full bg-black px-5 py-2.5 text-white hover:bg-zinc-800"
-          >
+          <button onClick={startTest} className={PRIMARY_BUTTON}>
             Começar
           </button>
         </div>
       )}
 
       {currentExercise && phase !== "intro" && phase !== "finished" && (
-        <p className="text-sm text-zinc-500">
+        <p className="text-sm text-zinc-500 dark:text-zinc-400">
           Exercício {index + 1} de {exercises.length} — {MODE_LABELS[currentExercise.mode]} · L
           {currentExercise.level} · {currentExercise.domain}
         </p>
@@ -189,17 +196,14 @@ export default function PlacementPage() {
 
       {phase === "concept" && currentExercise && (
         <div className="flex flex-col gap-4">
-          <h2 className="text-lg font-medium">{currentExercise.title}</h2>
-          <p className="whitespace-pre-wrap text-zinc-800">{currentExercise.prompt}</p>
-          <p className="text-sm text-zinc-500">
+          <h2 className="text-lg font-medium text-zinc-900 dark:text-zinc-50">{currentExercise.title}</h2>
+          <p className="whitespace-pre-wrap text-zinc-800 dark:text-zinc-100">{currentExercise.prompt}</p>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">
             Antes de escrever SQL, pense: qual é a população, a grain e a definição da métrica desta
             pergunta? Não há campo pra digitar isso — é só pra você organizar o raciocínio antes de
             codar.
           </p>
-          <button
-            onClick={goToSql}
-            className="w-fit rounded-full bg-black px-5 py-2.5 text-white hover:bg-zinc-800"
-          >
+          <button onClick={goToSql} className={PRIMARY_BUTTON}>
             Continuar para SQL
           </button>
         </div>
@@ -207,39 +211,36 @@ export default function PlacementPage() {
 
       {phase === "sql" && currentExercise && (
         <div className="flex flex-col gap-4">
-          <h2 className="text-lg font-medium">{currentExercise.title}</h2>
-          <p className="whitespace-pre-wrap text-zinc-800">{currentExercise.prompt}</p>
+          <h2 className="text-lg font-medium text-zinc-900 dark:text-zinc-50">{currentExercise.title}</h2>
+          <p className="whitespace-pre-wrap text-zinc-800 dark:text-zinc-100">{currentExercise.prompt}</p>
           <textarea
             value={sql}
             onChange={(e) => setSql(e.target.value)}
             rows={8}
             spellCheck={false}
-            className="w-full rounded border border-zinc-300 p-3 font-mono text-sm"
+            className="w-full rounded border border-zinc-300 bg-white p-3 font-mono text-sm text-zinc-900 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
             placeholder={`SELECT ...\nFROM ...`}
           />
           <div className="flex gap-3">
-            <button
-              onClick={runSqlAgainstDataset}
-              className="rounded-full border border-zinc-300 px-5 py-2 hover:bg-zinc-50"
-            >
+            <button onClick={runSqlAgainstDataset} className={SECONDARY_BUTTON}>
               Rodar
             </button>
-            <button
-              onClick={submitAnswer}
-              disabled={grading}
-              className="rounded-full bg-black px-5 py-2 text-white hover:bg-zinc-800 disabled:opacity-50"
-            >
+            <button onClick={submitAnswer} disabled={grading} className={PRIMARY_BUTTON}>
               {grading ? "Avaliando..." : "Enviar resposta"}
             </button>
           </div>
 
-          {runError && <p className="rounded bg-red-50 px-3 py-2 text-sm text-red-700">{runError}</p>}
+          {runError && (
+            <p className="rounded bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
+              {runError}
+            </p>
+          )}
 
           {runResult && (
-            <div className="overflow-x-auto rounded border border-zinc-200">
-              <table className="w-full text-sm">
+            <div className={`overflow-x-auto ${CARD}`}>
+              <table className="w-full text-sm text-zinc-900 dark:text-zinc-100">
                 <thead>
-                  <tr className="bg-zinc-50">
+                  <tr className="bg-zinc-50 dark:bg-zinc-800">
                     {runResult.columns.map((col) => (
                       <th key={col} className="px-3 py-2 text-left font-medium">
                         {col}
@@ -249,7 +250,7 @@ export default function PlacementPage() {
                 </thead>
                 <tbody>
                   {runResult.rows.slice(0, 20).map((row, i) => (
-                    <tr key={i} className="border-t border-zinc-100">
+                    <tr key={i} className="border-t border-zinc-100 dark:border-zinc-800">
                       {row.map((cell, j) => (
                         <td key={j} className="px-3 py-2">
                           {String(cell)}
@@ -268,31 +269,33 @@ export default function PlacementPage() {
         <div className="flex flex-col gap-4">
           <p
             className={`rounded px-3 py-2 text-sm ${
-              lastGrade.matches ? "bg-green-50 text-green-800" : "bg-amber-50 text-amber-800"
+              lastGrade.matches
+                ? "bg-green-50 text-green-800 dark:bg-green-950 dark:text-green-300"
+                : "bg-amber-50 text-amber-800 dark:bg-amber-950 dark:text-amber-300"
             }`}
           >
             {lastGrade.matches ? "Resultado correto." : `Resultado incorreto. ${lastGrade.reason ?? ""}`}
           </p>
 
           {!lastGrade.matches && (
-            <div className="flex flex-col gap-2 rounded border border-zinc-200 p-4 text-sm">
+            <div className={`flex flex-col gap-2 p-4 text-sm text-zinc-800 dark:text-zinc-100 ${CARD}`}>
               <p>
-                <span className="font-medium">Population: </span>
+                <span className="font-medium text-zinc-900 dark:text-zinc-50">Population: </span>
                 {currentExercise.population}
               </p>
               <p>
-                <span className="font-medium">Grain: </span>
+                <span className="font-medium text-zinc-900 dark:text-zinc-50">Grain: </span>
                 {currentExercise.grain}
               </p>
               {currentExercise.metricDefinition && (
                 <p>
-                  <span className="font-medium">Metric Definition: </span>
+                  <span className="font-medium text-zinc-900 dark:text-zinc-50">Metric Definition: </span>
                   {currentExercise.metricDefinition}
                 </p>
               )}
               {currentExercise.transformationPlan && (
                 <div>
-                  <span className="font-medium">Transformation Plan:</span>
+                  <span className="font-medium text-zinc-900 dark:text-zinc-50">Transformation Plan:</span>
                   <ol className="ml-5 list-decimal">
                     {currentExercise.transformationPlan.map((step, i) => (
                       <li key={i}>{step}</li>
@@ -300,16 +303,13 @@ export default function PlacementPage() {
                   </ol>
                 </div>
               )}
-              <p className="text-zinc-500">
+              <p className="text-zinc-500 dark:text-zinc-400">
                 Compare com o que você pensou antes de codar e identifique qual conceito faltou.
               </p>
             </div>
           )}
 
-          <button
-            onClick={nextExercise}
-            className="w-fit rounded-full bg-black px-5 py-2.5 text-white hover:bg-zinc-800"
-          >
+          <button onClick={nextExercise} className={PRIMARY_BUTTON}>
             {index === exercises.length - 1 ? "Finalizar teste" : "Próximo exercício"}
           </button>
         </div>
@@ -317,10 +317,13 @@ export default function PlacementPage() {
 
       {phase === "finished" && levelsByMode && (
         <div className="flex flex-col gap-4">
-          <p className="text-zinc-700">Nível inicial definido em cada modo:</p>
+          <p className="text-zinc-700 dark:text-zinc-200">Nível inicial definido em cada modo:</p>
           <ul className="flex flex-col gap-2">
             {(Object.keys(MODE_LABELS) as Mode[]).map((mode) => (
-              <li key={mode} className="flex items-center justify-between rounded border border-zinc-200 px-4 py-2">
+              <li
+                key={mode}
+                className={`flex items-center justify-between px-4 py-2 text-zinc-900 dark:text-zinc-50 ${CARD}`}
+              >
                 <span>{MODE_LABELS[mode]}</span>
                 <span className="font-medium">L{levelsByMode[mode]}</span>
               </li>
