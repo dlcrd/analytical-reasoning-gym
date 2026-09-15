@@ -1,0 +1,9 @@
+# Final-result grading runs server-side, re-executing referenceSql there
+
+The student's SQL runs client-side against DuckDB-WASM (see `src/lib/duckdb-runner.ts` and the V1 scope doc — there is no server-side sandbox for *student* SQL). But grading the final result (`compareResultSets`, per docs/adr/0004) requires the *expected* result too, and `referenceSql` must never reach the client (0004 again: "the reference SQL itself is never revealed"). Since the client only has the SQL text of the exercise, not the authored answer, it cannot compute the expected result itself.
+
+Resolution: a server route (`/api/exercises/[id]/grade`) re-executes that exercise's `referenceSql` against the same Parquet dataset (`public/datasets/<domain>/`), using `@duckdb/node-api` — the same in-process DuckDB engine already used by `scripts/exercises/validate.ts` to admit exercises. This SQL is trusted/authored content, not untrusted user input, so running it server-side doesn't reintroduce the sandboxing problem the "no server-side SQL sandbox" decision was about. The server then calls `compareResultSets` itself and returns only `{ matches, reason }` — never the expected rows — matching `compareResultSets`' own contract ("never leaks the expected values"). The client submits its own already-computed `QueryResult` (it ran its SQL locally already); the server never runs student SQL.
+
+Alternative considered and rejected: have the server return the expected `QueryResult` to the client and grade there. Rejected because that leaks the actual answer values over the network — a much bigger reveal than the SQL text, and directly against 0004's grading-instructions intent.
+
+Consequence: `@duckdb/node-api` moves from a dev-only tool (used by the offline admission script) to a production runtime dependency, since the grade route needs it in the deployed app.
