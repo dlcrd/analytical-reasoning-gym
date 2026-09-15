@@ -8,8 +8,11 @@ const nextConfig: NextConfig = {
   // either, so it silently drops the compiled .so from the serverless function output —
   // force it in for the one route that actually runs server-side grading (see
   // docs/adr/0005-grading-runs-server-side-against-reference-sql.md).
+  // A literal "[id]" here would be misinterpreted by picomatch as a character
+  // class (matching a single "i" or "d"), never matching the real route — use
+  // a wildcard for the dynamic segment instead.
   outputFileTracingIncludes: {
-    "/api/exercises/[id]/grade": [
+    "/api/exercises/*/grade": [
       "./node_modules/@duckdb/node-bindings-linux-x64/**/*",
       "./node_modules/@duckdb/node-bindings/**/*",
       "./node_modules/@duckdb/node-api/**/*",
