@@ -2,15 +2,16 @@ import { eq } from "drizzle-orm";
 import type { Db } from "@/db/client";
 import type { Domain, Mode } from "@/db/schema";
 import { attempts, modeProgress, modeValues, sessions } from "@/db/schema";
-import { getExerciseById, getPlacementTestExercises } from "./exercises";
+import { getExerciseById, getExercisesByModeAndLevel, getPlacementTestExercises } from "./exercises";
 import { derivePlacementLevel, type PlacementTally } from "./placement";
+import { nextPracticeProgress } from "./practice";
 
 /**
- * What the Placement Test UI gets per exercise — everything needed to render the
+ * What Placement Test and Practice Mode UIs get per exercise — everything needed to render the
  * concept-first steps, but never the reference SQL or common-wrong-answer prose
  * (see docs/adr/0004-concept-steps-are-self-assessed-not-auto-graded.md).
  */
-export interface PlacementExercisePreview {
+export interface ExercisePreview {
   id: string;
   mode: Mode;
   domain: Domain;
@@ -23,9 +24,40 @@ export interface PlacementExercisePreview {
   transformationPlan: string[] | null;
 }
 
+function toPreview(exercise: {
+  id: string;
+  mode: Mode;
+  domain: Domain;
+  level: number;
+  title: string;
+  prompt: string;
+  population: string;
+  grain: string;
+  metricDefinition: string | null;
+  transformationPlan: string[] | null;
+}): ExercisePreview {
+  return {
+    id: exercise.id,
+    mode: exercise.mode,
+    domain: exercise.domain,
+    level: exercise.level,
+    title: exercise.title,
+    prompt: exercise.prompt,
+    population: exercise.population,
+    grain: exercise.grain,
+    metricDefinition: exercise.metricDefinition,
+    transformationPlan: exercise.transformationPlan,
+  };
+}
+
+function pickRandom<T>(items: T[]): T | null {
+  if (items.length === 0) return null;
+  return items[Math.floor(Math.random() * items.length)];
+}
+
 export interface StartPlacementSessionResult {
   sessionId: string;
-  exercises: PlacementExercisePreview[];
+  exercises: ExercisePreview[];
 }
 
 /** Starts the one-time Placement Test: a new Session plus all 16 L4/L5 exercises spanning every Mode. */
@@ -35,18 +67,7 @@ export async function startPlacementSession(db: Db): Promise<StartPlacementSessi
 
   return {
     sessionId: session.id,
-    exercises: allExercises.map((exercise) => ({
-      id: exercise.id,
-      mode: exercise.mode,
-      domain: exercise.domain,
-      level: exercise.level,
-      title: exercise.title,
-      prompt: exercise.prompt,
-      population: exercise.population,
-      grain: exercise.grain,
-      metricDefinition: exercise.metricDefinition,
-      transformationPlan: exercise.transformationPlan,
-    })),
+    exercises: allExercises.map(toPreview),
   };
 }
 
@@ -105,4 +126,82 @@ export async function finalizePlacementSession(
   await db.update(sessions).set({ completedAt: new Date() }).where(eq(sessions.id, sessionId));
 
   return levelsByMode;
+}
+
+export interface StartPracticeSessionResult {
+  sessionId: string;
+  currentLevel: number;
+  levelStreak: number;
+  /** null only if a mode/level combination has no admitted exercises yet. */
+  exercise: ExercisePreview | null;
+}
+
+/** Starts a Practice Mode session: a new Session plus one exercise at the mode's current level. */
+export async function startPracticeSession(db: Db, mode: Mode): Promise<StartPracticeSessionResult> {
+  const [progress] = await db.select().from(modeProgress).where(eq(modeProgress.mode, mode));
+  const [session] = await db.insert(sessions).values({ type: "practice" }).returning();
+  const candidates = await getExercisesByModeAndLevel(mode, progress.currentLevel);
+  const exercise = pickRandom(candidates);
+
+  return {
+    sessionId: session.id,
+    currentLevel: progress.currentLevel,
+    levelStreak: progress.levelStreak,
+    exercise: exercise ? toPreview(exercise) : null,
+  };
+}
+
+export interface RecordPracticeAttemptInput {
+  sessionId: string;
+  exerciseId: string;
+  isCorrect: boolean;
+  feedbackChecklist: unknown;
+}
+
+export interface RecordPracticeAttemptResult {
+  currentLevel: number;
+  levelStreak: number;
+  leveledUp: boolean;
+  /** null only if the (possibly new) mode/level combination has no admitted exercises yet. */
+  nextExercise: ExercisePreview | null;
+}
+
+/**
+ * Persists one Practice Mode Attempt, applies the level-progression rule (see practice.ts),
+ * and returns a next exercise at the (possibly advanced) current level, distinct from the one
+ * just answered when the level has other exercises to pick from.
+ */
+export async function recordPracticeAttempt(
+  db: Db,
+  input: RecordPracticeAttemptInput,
+): Promise<RecordPracticeAttemptResult> {
+  const exercise = await getExerciseById(input.exerciseId);
+  if (!exercise) {
+    throw new Error(`recordPracticeAttempt: unknown exercise "${input.exerciseId}"`);
+  }
+
+  await db.insert(attempts).values({
+    sessionId: input.sessionId,
+    exerciseId: input.exerciseId,
+    isCorrect: input.isCorrect,
+    feedbackChecklist: input.feedbackChecklist,
+  });
+
+  const [progress] = await db.select().from(modeProgress).where(eq(modeProgress.mode, exercise.mode));
+  const updated = nextPracticeProgress(progress, input.isCorrect);
+  await db
+    .update(modeProgress)
+    .set({ currentLevel: updated.currentLevel, levelStreak: updated.levelStreak, updatedAt: new Date() })
+    .where(eq(modeProgress.mode, exercise.mode));
+
+  const candidates = await getExercisesByModeAndLevel(exercise.mode, updated.currentLevel);
+  const remaining = candidates.filter((candidate) => candidate.id !== input.exerciseId);
+  const nextExercise = pickRandom(remaining.length > 0 ? remaining : candidates);
+
+  return {
+    currentLevel: updated.currentLevel,
+    levelStreak: updated.levelStreak,
+    leveledUp: updated.currentLevel > progress.currentLevel,
+    nextExercise: nextExercise ? toPreview(nextExercise) : null,
+  };
 }
