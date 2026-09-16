@@ -4,7 +4,9 @@ import { attempts, modeProgress, sessions } from "@/db/schema";
 import { createTestDb } from "@/db/__tests__/test-db";
 import { syncExercisesIndex } from "@/db/seed-exercises";
 import {
-  finalizePlacementSession,
+  completePlacementSession,
+  getActivePlacementSession,
+  recordPlacementAttempt,
   recordPracticeAttempt,
   startPlacementSession,
   startPracticeSession,
@@ -39,8 +41,8 @@ describe("startPlacementSession", () => {
   });
 });
 
-describe("finalizePlacementSession", () => {
-  it("persists every attempt, sets each mode's starting level, and marks the session complete", async () => {
+describe("recordPlacementAttempt + completePlacementSession", () => {
+  it("persists every attempt as it's answered, sets each mode's starting level, and marks the session complete", async () => {
     const db = await createTestDb();
     await syncExercisesIndex(db);
 
@@ -48,21 +50,25 @@ describe("finalizePlacementSession", () => {
 
     // For sql_build: both L5 correct -> should place at L5.
     // For every other mode: nothing correct -> should place at the V1 floor, L3.
-    const attemptInputs = exercises.map((exercise) => ({
-      exerciseId: exercise.id,
-      isCorrect: exercise.mode === "sql_build" && exercise.level === 5,
-      feedbackChecklist: { sqlSyntax: true, result: exercise.mode === "sql_build" && exercise.level === 5 },
-    }));
+    for (const exercise of exercises) {
+      const isCorrect = exercise.mode === "sql_build" && exercise.level === 5;
+      await recordPlacementAttempt(db, sessionId, {
+        exerciseId: exercise.id,
+        isCorrect,
+        feedbackChecklist: { sqlSyntax: true, result: isCorrect },
+      });
+    }
 
-    const levelsByMode = await finalizePlacementSession(db, sessionId, attemptInputs);
+    // Attempts are already in the DB before completion is ever called — this is what makes resume possible.
+    const storedBeforeCompletion = await db.select().from(attempts).where(eq(attempts.sessionId, sessionId));
+    expect(storedBeforeCompletion).toHaveLength(exercises.length);
+
+    const levelsByMode = await completePlacementSession(db, sessionId);
 
     expect(levelsByMode.sql_build).toBe(5);
     expect(levelsByMode.metric_lab).toBe(3);
     expect(levelsByMode.granularity_trainer).toBe(3);
     expect(levelsByMode.query_architecture).toBe(3);
-
-    const storedAttempts = await db.select().from(attempts).where(eq(attempts.sessionId, sessionId));
-    expect(storedAttempts).toHaveLength(16);
 
     const [sqlBuildProgress] = await db
       .select()
@@ -81,10 +87,56 @@ describe("finalizePlacementSession", () => {
     const { sessionId } = await startPlacementSession(db);
 
     await expect(
-      finalizePlacementSession(db, sessionId, [
-        { exerciseId: "does-not-exist", isCorrect: true, feedbackChecklist: {} },
-      ]),
+      recordPlacementAttempt(db, sessionId, { exerciseId: "does-not-exist", isCorrect: true, feedbackChecklist: {} }),
     ).rejects.toThrow(/unknown exercise/);
+  });
+});
+
+describe("getActivePlacementSession", () => {
+  it("returns null when there is no incomplete placement session", async () => {
+    const db = await createTestDb();
+    await syncExercisesIndex(db);
+
+    expect(await getActivePlacementSession(db)).toBeNull();
+  });
+
+  it("returns the in-progress session's questions and which ones are already answered", async () => {
+    const db = await createTestDb();
+    await syncExercisesIndex(db);
+
+    const { sessionId, exercises } = await startPlacementSession(db);
+    const [first, second] = exercises;
+
+    await recordPlacementAttempt(db, sessionId, {
+      exerciseId: first.id,
+      isCorrect: true,
+      feedbackChecklist: { sqlSyntax: true, result: true },
+    });
+
+    const active = await getActivePlacementSession(db);
+
+    expect(active).not.toBeNull();
+    expect(active!.sessionId).toBe(sessionId);
+    expect(active!.questions.map((q) => q.id)).toEqual(exercises.map((e) => e.id));
+    expect(active!.answeredExerciseIds).toEqual([first.id]);
+    expect(active!.answeredExerciseIds).not.toContain(second.id);
+  });
+
+  it("returns null once the session has been completed", async () => {
+    const db = await createTestDb();
+    await syncExercisesIndex(db);
+
+    const { sessionId, exercises } = await startPlacementSession(db);
+    for (const exercise of exercises) {
+      await recordPlacementAttempt(db, sessionId, {
+        exerciseId: exercise.id,
+        isCorrect: true,
+        feedbackChecklist: {},
+      });
+    }
+    await completePlacementSession(db, sessionId);
+
+    expect(await getActivePlacementSession(db)).toBeNull();
   });
 });
 

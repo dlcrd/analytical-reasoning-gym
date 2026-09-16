@@ -1,8 +1,8 @@
-import { eq } from "drizzle-orm";
+import { and, desc, eq, isNull } from "drizzle-orm";
 import type { Db } from "@/db/client";
 import type { Domain, Mode } from "@/db/schema";
 import { attempts, modeProgress, modeValues, sessions } from "@/db/schema";
-import { getExerciseById, getExercisesByModeAndLevel, getPlacementTestExercises } from "./exercises";
+import { getExerciseById, getExercisesByModeAndLevel, getPlacementTestQuestions } from "./exercises";
 import { derivePlacementLevel, type PlacementTally } from "./placement";
 import { nextPracticeProgress } from "./practice";
 import { computeReferenceResult } from "./server-grading";
@@ -71,9 +71,9 @@ export interface StartPlacementSessionResult {
   exercises: ExercisePreview[];
 }
 
-/** Starts the one-time Placement Test: a new Session plus all 16 L4/L5 exercises spanning every Mode. */
+/** Starts the one-time Placement Test: a new Session plus every eligible L4/L5 question, in a stable order. */
 export async function startPlacementSession(db: Db): Promise<StartPlacementSessionResult> {
-  const allExercises = await getPlacementTestExercises();
+  const allExercises = await getPlacementTestQuestions();
   const [session] = await db.insert(sessions).values({ type: "placement" }).returning();
 
   return {
@@ -89,33 +89,43 @@ export interface PlacementAttemptInput {
 }
 
 /**
- * Persists every Placement Test Attempt, derives each Mode's starting current_level from the
- * L4/L5 tally (see placement.ts), and marks the Session complete. Placement Attempts never
- * count toward a Mode's Level Streak (see CONTEXT.md's "Placement Test" entry).
+ * Persists a single Placement Test Attempt as soon as it's answered — this (not a batch at the
+ * end) is what makes the Placement Test resumable after closing the browser mid-test.
  */
-export async function finalizePlacementSession(
+export async function recordPlacementAttempt(
   db: Db,
   sessionId: string,
-  attemptInputs: PlacementAttemptInput[],
-): Promise<Record<Mode, number>> {
+  input: PlacementAttemptInput,
+): Promise<void> {
+  const exercise = await getExerciseById(input.exerciseId);
+  if (!exercise) {
+    throw new Error(`recordPlacementAttempt: unknown exercise "${input.exerciseId}"`);
+  }
+
+  await db.insert(attempts).values({
+    sessionId,
+    exerciseId: input.exerciseId,
+    isCorrect: input.isCorrect,
+    feedbackChecklist: input.feedbackChecklist,
+  });
+}
+
+/**
+ * Derives each Mode's starting current_level from the tally of already-persisted Attempts for
+ * this Session (see placement.ts), and marks the Session complete. Placement Attempts never
+ * count toward a Mode's Level Streak (see CONTEXT.md's "Placement Test" entry).
+ */
+export async function completePlacementSession(db: Db, sessionId: string): Promise<Record<Mode, number>> {
   const tallies = new Map<Mode, PlacementTally>(
     modeValues.map((mode) => [mode, { level4Correct: 0, level5Correct: 0 }]),
   );
 
-  for (const input of attemptInputs) {
-    const exercise = await getExerciseById(input.exerciseId);
-    if (!exercise) {
-      throw new Error(`finalizePlacementSession: unknown exercise "${input.exerciseId}"`);
-    }
+  const storedAttempts = await db.select().from(attempts).where(eq(attempts.sessionId, sessionId));
+  for (const attempt of storedAttempts) {
+    const exercise = await getExerciseById(attempt.exerciseId);
+    if (!exercise) continue;
 
-    await db.insert(attempts).values({
-      sessionId,
-      exerciseId: input.exerciseId,
-      isCorrect: input.isCorrect,
-      feedbackChecklist: input.feedbackChecklist,
-    });
-
-    if (input.isCorrect && (exercise.level === 4 || exercise.level === 5)) {
+    if (attempt.isCorrect && (exercise.level === 4 || exercise.level === 5)) {
       const tally = tallies.get(exercise.mode);
       if (tally) {
         if (exercise.level === 4) tally.level4Correct += 1;
@@ -137,6 +147,37 @@ export async function finalizePlacementSession(
   await db.update(sessions).set({ completedAt: new Date() }).where(eq(sessions.id, sessionId));
 
   return levelsByMode;
+}
+
+export interface ActivePlacementSession {
+  sessionId: string;
+  questions: ExercisePreview[];
+  answeredExerciseIds: string[];
+}
+
+/**
+ * Finds the most recent incomplete Placement Test Session, if any — lets the UI resume exactly
+ * where the student left off instead of restarting. Returns null when there's nothing to resume
+ * (no Placement Test ever started, or the last one was already completed).
+ */
+export async function getActivePlacementSession(db: Db): Promise<ActivePlacementSession | null> {
+  const [session] = await db
+    .select()
+    .from(sessions)
+    .where(and(eq(sessions.type, "placement"), isNull(sessions.completedAt)))
+    .orderBy(desc(sessions.startedAt))
+    .limit(1);
+
+  if (!session) return null;
+
+  const allExercises = await getPlacementTestQuestions();
+  const storedAttempts = await db.select().from(attempts).where(eq(attempts.sessionId, session.id));
+
+  return {
+    sessionId: session.id,
+    questions: await Promise.all(allExercises.map(toPreview)),
+    answeredExerciseIds: storedAttempts.map((attempt) => attempt.exerciseId),
+  };
 }
 
 export interface StartPracticeSessionResult {

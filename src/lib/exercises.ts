@@ -53,10 +53,20 @@ export async function getExerciseById(id: string): Promise<ValidatedExercise | u
   return all.find((exercise) => exercise.id === id);
 }
 
-/** All admitted exercises at the Placement Test's L4/L5 band, spanning every Mode. */
-export async function getPlacementTestExercises(): Promise<ValidatedExercise[]> {
+/**
+ * Admitted exercises/questions at the Placement Test's L4/L5 band, spanning every Mode —
+ * SQL-writing and the closed formats (multiple_choice/ordering/budget) alike, excluding any
+ * explicitly opted out via placementEligible: false. Sorted by id so start and resume always
+ * see the exact same sequence without needing to persist an explicit order anywhere.
+ */
+export async function getPlacementTestQuestions(): Promise<ValidatedExercise[]> {
   const all = await loadAllExercises();
-  return all.filter(
-    (exercise) => PLACEMENT_TEST_LEVELS.includes(exercise.level) && modeValues.includes(exercise.mode),
-  );
+  return all
+    .filter(
+      (exercise) =>
+        PLACEMENT_TEST_LEVELS.includes(exercise.level) &&
+        modeValues.includes(exercise.mode) &&
+        exercise.placementEligible !== false,
+    )
+    .sort((a, b) => a.id.localeCompare(b.id));
 }

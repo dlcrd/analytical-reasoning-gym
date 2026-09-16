@@ -3,7 +3,7 @@ import { modeValues } from "@/db/schema";
 import {
   getExerciseById,
   getExercisesByModeAndLevel,
-  getPlacementTestExercises,
+  getPlacementTestQuestions,
 } from "../exercises";
 
 describe("getExercisesByModeAndLevel", () => {
@@ -41,16 +41,25 @@ describe("getExerciseById", () => {
   });
 });
 
-describe("getPlacementTestExercises", () => {
-  it("returns 12-16 exercises at level 4 or 5, spanning all 4 modes", async () => {
-    const exercises = await getPlacementTestExercises();
+describe("getPlacementTestQuestions", () => {
+  it("returns questions at level 4 or 5, spanning all 4 modes, excluding any placementEligible: false", async () => {
+    const questions = await getPlacementTestQuestions();
 
-    expect(exercises.length).toBeGreaterThanOrEqual(12);
-    expect(exercises.length).toBeLessThanOrEqual(16);
-    for (const exercise of exercises) {
-      expect([4, 5]).toContain(exercise.level);
+    expect(questions.length).toBeGreaterThan(0);
+    for (const question of questions) {
+      expect([4, 5]).toContain(question.level);
+      expect(question.placementEligible).not.toBe(false);
     }
-    const modesCovered = new Set(exercises.map((e) => e.mode));
+    const modesCovered = new Set(questions.map((q) => q.mode));
     expect(modesCovered).toEqual(new Set(modeValues));
+  });
+
+  it("returns a stable order (sorted by id), so start and resume see the same sequence", async () => {
+    const first = await getPlacementTestQuestions();
+    const second = await getPlacementTestQuestions();
+
+    expect(first.map((q) => q.id)).toEqual(second.map((q) => q.id));
+    const ids = first.map((q) => q.id);
+    expect(ids).toEqual([...ids].sort((a, b) => a.localeCompare(b)));
   });
 });
