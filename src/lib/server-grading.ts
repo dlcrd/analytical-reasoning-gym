@@ -1,6 +1,7 @@
 import { readdir } from "node:fs/promises";
 import path from "node:path";
 import { DuckDBInstance } from "@duckdb/node-api";
+import { gradeBudget, gradeMultipleChoice, gradeOrdering } from "./closed-question-grading";
 import { getExerciseById } from "./exercises";
 import { compareResultSets, type ComparisonResult, type QueryResult } from "./grading";
 
@@ -49,11 +50,49 @@ export async function computeReferenceResult(exerciseId: string): Promise<QueryR
   return runSqlServerSide(exercise.domain, exercise.referenceSql);
 }
 
+export type GradeAttemptInput =
+  | ({ type: "sql" } & QueryResult)
+  | { type: "multiple_choice"; selectedOptionId: string }
+  | { type: "ordering"; submittedOrder: string[] }
+  | { type: "budget"; selectedInvestigationIds: string[]; recommendationOptionId: string };
+
 /**
- * Grades a student's already-executed query result against `exerciseId`'s referenceSql,
- * re-run here server-side. Returns only matches/reason — never the expected rows.
+ * Grades a student's answer against `exerciseId`'s own stored correct answer, dispatching by
+ * the exercise's questionType. For "sql" this re-runs referenceSql server-side and compares
+ * result sets (see docs/adr/0005); the other 3 types compare directly, no DuckDB involved.
+ * Returns only matches/reason — never the expected/correct values.
  */
-export async function gradeAttempt(exerciseId: string, studentResult: QueryResult): Promise<ComparisonResult> {
-  const expected = await computeReferenceResult(exerciseId);
-  return compareResultSets(studentResult, expected);
+export async function gradeAttempt(exerciseId: string, input: GradeAttemptInput): Promise<ComparisonResult> {
+  const exercise = await getExerciseById(exerciseId);
+  if (!exercise) {
+    throw new Error(`gradeAttempt: unknown exercise "${exerciseId}"`);
+  }
+  if (exercise.questionType !== input.type) {
+    throw new Error(
+      `gradeAttempt: answer type "${input.type}" does not match exercise "${exerciseId}"'s questionType "${exercise.questionType}"`,
+    );
+  }
+
+  switch (input.type) {
+    case "sql": {
+      const expected = await computeReferenceResult(exerciseId);
+      return compareResultSets({ columns: input.columns, rows: input.rows }, expected);
+    }
+    case "multiple_choice":
+      return gradeMultipleChoice(input.selectedOptionId, exercise.correctOptionId!);
+    case "ordering":
+      return gradeOrdering(input.submittedOrder, exercise.correctOrder!);
+    case "budget":
+      return gradeBudget(
+        {
+          selectedInvestigationIds: input.selectedInvestigationIds,
+          recommendationOptionId: input.recommendationOptionId,
+        },
+        {
+          budgetAmount: exercise.budgetAmount!,
+          investigations: exercise.investigations!,
+          correctRecommendationOptionId: exercise.correctRecommendationOptionId!,
+        },
+      );
+  }
 }

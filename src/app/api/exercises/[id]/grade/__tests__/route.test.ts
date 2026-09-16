@@ -25,13 +25,25 @@ describe("POST /api/exercises/[id]/grade", () => {
     const { POST } = await import("../route");
     const { gradeAttempt } = await import("@/lib/server-grading");
 
-    const response = await POST(makeRequest({ columns: ["n"], rows: [[1]] }), {
+    const response = await POST(makeRequest({ type: "sql", columns: ["n"], rows: [[1]] }), {
       params: Promise.resolve({ id: "some-id" }),
     });
     const body = await response.json();
 
-    expect(gradeAttempt).toHaveBeenCalledWith("some-id", { columns: ["n"], rows: [[1]] });
+    expect(gradeAttempt).toHaveBeenCalledWith("some-id", { type: "sql", columns: ["n"], rows: [[1]] });
     expect(body.matches).toBe(true);
+  });
+
+  it("delegates a multiple_choice answer the same way", async () => {
+    const { POST } = await import("../route");
+    const { gradeAttempt } = await import("@/lib/server-grading");
+
+    const response = await POST(makeRequest({ type: "multiple_choice", selectedOptionId: "b" }), {
+      params: Promise.resolve({ id: "some-id" }),
+    });
+
+    expect(response.status).toBe(200);
+    expect(gradeAttempt).toHaveBeenCalledWith("some-id", { type: "multiple_choice", selectedOptionId: "b" });
   });
 
   it("returns 400 on a malformed body without calling gradeAttempt", async () => {
@@ -49,7 +61,7 @@ describe("POST /api/exercises/[id]/grade", () => {
   it("returns 404 when the exercise id is unknown", async () => {
     const { POST } = await import("../route");
 
-    const response = await POST(makeRequest({ columns: [], rows: [] }), {
+    const response = await POST(makeRequest({ type: "sql", columns: [], rows: [] }), {
       params: Promise.resolve({ id: "does-not-exist" }),
     });
 

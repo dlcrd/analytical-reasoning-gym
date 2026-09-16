@@ -7,13 +7,14 @@ describe("gradeAttempt", () => {
   it("matches when the student's result equals the reference SQL's result", async () => {
     const expected = await computeReferenceResult(KNOWN_EXERCISE_ID);
 
-    const result = await gradeAttempt(KNOWN_EXERCISE_ID, expected);
+    const result = await gradeAttempt(KNOWN_EXERCISE_ID, { type: "sql", ...expected });
 
     expect(result.matches).toBe(true);
   });
 
   it("returns a generic reason without leaking expected values on a mismatch", async () => {
     const result = await gradeAttempt(KNOWN_EXERCISE_ID, {
+      type: "sql",
       columns: ["marketplace_completed_orders"],
       rows: [[999999]],
     });
@@ -25,7 +26,7 @@ describe("gradeAttempt", () => {
 
   it("throws on an unknown exercise id", async () => {
     await expect(
-      gradeAttempt("does-not-exist", { columns: [], rows: [] }),
+      gradeAttempt("does-not-exist", { type: "sql", columns: [], rows: [] }),
     ).rejects.toThrow(/unknown exercise/);
   });
 

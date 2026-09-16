@@ -123,7 +123,7 @@ export function PracticeSession({ mode }: { mode: Mode }) {
         const response = await fetch(`/api/exercises/${exercise.id}/grade`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(runResult),
+          body: JSON.stringify({ type: "sql", ...runResult }),
         });
         if (!response.ok) throw new Error("Falha ao avaliar a resposta.");
         const grade = (await response.json()) as { matches: boolean; reason?: string };
