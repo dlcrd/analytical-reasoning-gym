@@ -27,7 +27,10 @@ async function runSqlServerSide(domain: string, sql: string): Promise<QueryResul
     }
 
     const reader = await connection.runAndReadAll(sql);
-    return { columns: reader.columnNames(), rows: reader.getRowsJS() as unknown[][] };
+    const rows = (reader.getRowsJS() as unknown[][]).map((row) =>
+      row.map((cell) => (typeof cell === "bigint" ? Number(cell) : cell)),
+    );
+    return { columns: reader.columnNames(), rows };
   } finally {
     connection.closeSync();
     instance.closeSync();

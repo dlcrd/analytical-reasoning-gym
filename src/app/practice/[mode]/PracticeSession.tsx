@@ -17,6 +17,7 @@ interface ExercisePreview {
   grain: string;
   metricDefinition: string | null;
   transformationPlan: string[] | null;
+  expectedColumns: string[] | null;
 }
 
 const MODE_LABELS: Record<Mode, string> = {
@@ -219,6 +220,18 @@ export function PracticeSession({ mode }: { mode: Mode }) {
           <h2 className="text-lg font-medium text-zinc-900 dark:text-zinc-50">{exercise.title}</h2>
           <p className="whitespace-pre-wrap text-zinc-800 dark:text-zinc-100">{exercise.prompt}</p>
           <SchemaPanel domain={exercise.domain} />
+          {exercise.expectedColumns && (
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              Formato de saída esperado: colunas{" "}
+              {exercise.expectedColumns.map((col, i) => (
+                <span key={col}>
+                  {i > 0 && ", "}
+                  <code className="rounded bg-zinc-100 px-1 py-0.5 dark:bg-zinc-800">{col}</code>
+                </span>
+              ))}{" "}
+              (nomes flexíveis, mas essa é a forma esperada).
+            </p>
+          )}
           <SqlEditor value={sql} onChange={setSql} placeholder={`SELECT ...\nFROM ...`} />
           <div className="flex gap-3">
             <button onClick={runSqlAgainstDataset} className={SECONDARY_BUTTON}>

@@ -25,6 +25,18 @@ describe("startPlacementSession", () => {
     expect(session.type).toBe("placement");
     expect(session.completedAt).toBeNull();
   });
+
+  it("includes the expected output columns (never the reference SQL itself) for each exercise", async () => {
+    const db = await createTestDb();
+
+    const { exercises } = await startPlacementSession(db);
+
+    expect(exercises.length).toBeGreaterThan(0);
+    for (const exercise of exercises) {
+      expect(exercise.expectedColumns).not.toBeNull();
+      expect(exercise.expectedColumns!.length).toBeGreaterThan(0);
+    }
+  });
 });
 
 describe("finalizePlacementSession", () => {

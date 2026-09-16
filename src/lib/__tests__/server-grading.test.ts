@@ -28,4 +28,15 @@ describe("gradeAttempt", () => {
       gradeAttempt("does-not-exist", { columns: [], rows: [] }),
     ).rejects.toThrow(/unknown exercise/);
   });
+
+  it("returns a reference result with no bigint cells, so it's always JSON-serializable", async () => {
+    const result = await computeReferenceResult(KNOWN_EXERCISE_ID);
+
+    for (const row of result.rows) {
+      for (const cell of row) {
+        expect(typeof cell).not.toBe("bigint");
+      }
+    }
+    expect(() => JSON.stringify(result)).not.toThrow();
+  });
 });

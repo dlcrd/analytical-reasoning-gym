@@ -5,6 +5,7 @@ import { attempts, modeProgress, modeValues, sessions } from "@/db/schema";
 import { getExerciseById, getExercisesByModeAndLevel, getPlacementTestExercises } from "./exercises";
 import { derivePlacementLevel, type PlacementTally } from "./placement";
 import { nextPracticeProgress } from "./practice";
+import { computeReferenceResult } from "./server-grading";
 
 /**
  * What Placement Test and Practice Mode UIs get per exercise — everything needed to render the
@@ -22,9 +23,11 @@ export interface ExercisePreview {
   grain: string;
   metricDefinition: string | null;
   transformationPlan: string[] | null;
+  /** Column names the referenceSql produces — a format hint, never the SQL itself or its rows. Null if it couldn't be computed. */
+  expectedColumns: string[] | null;
 }
 
-function toPreview(exercise: {
+async function toPreview(exercise: {
   id: string;
   mode: Mode;
   domain: Domain;
@@ -35,7 +38,14 @@ function toPreview(exercise: {
   grain: string;
   metricDefinition: string | null;
   transformationPlan: string[] | null;
-}): ExercisePreview {
+}): Promise<ExercisePreview> {
+  let expectedColumns: string[] | null = null;
+  try {
+    expectedColumns = (await computeReferenceResult(exercise.id)).columns;
+  } catch {
+    // Format hint is best-effort — never block a session on it.
+  }
+
   return {
     id: exercise.id,
     mode: exercise.mode,
@@ -47,6 +57,7 @@ function toPreview(exercise: {
     grain: exercise.grain,
     metricDefinition: exercise.metricDefinition,
     transformationPlan: exercise.transformationPlan,
+    expectedColumns,
   };
 }
 
@@ -67,7 +78,7 @@ export async function startPlacementSession(db: Db): Promise<StartPlacementSessi
 
   return {
     sessionId: session.id,
-    exercises: allExercises.map(toPreview),
+    exercises: await Promise.all(allExercises.map(toPreview)),
   };
 }
 
@@ -147,7 +158,7 @@ export async function startPracticeSession(db: Db, mode: Mode): Promise<StartPra
     sessionId: session.id,
     currentLevel: progress.currentLevel,
     levelStreak: progress.levelStreak,
-    exercise: exercise ? toPreview(exercise) : null,
+    exercise: exercise ? await toPreview(exercise) : null,
   };
 }
 
@@ -202,6 +213,6 @@ export async function recordPracticeAttempt(
     currentLevel: updated.currentLevel,
     levelStreak: updated.levelStreak,
     leveledUp: updated.currentLevel > progress.currentLevel,
-    nextExercise: nextExercise ? toPreview(nextExercise) : null,
+    nextExercise: nextExercise ? await toPreview(nextExercise) : null,
   };
 }

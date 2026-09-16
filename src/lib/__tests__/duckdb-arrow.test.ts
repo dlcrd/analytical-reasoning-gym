@@ -28,4 +28,16 @@ describe("arrowTableToQueryResult", () => {
 
     expect(arrowTableToQueryResult(fakeTable)).toEqual({ columns: ["n"], rows: [] });
   });
+
+  it("converts bigint cells (e.g. COUNT/SUM over BIGINT columns) to plain numbers", () => {
+    const fakeTable: ArrowLikeTable = {
+      schema: { fields: [{ name: "total" }] },
+      toArray: () => [{ total: BigInt(42) }],
+    };
+
+    const result = arrowTableToQueryResult(fakeTable);
+
+    expect(result).toEqual({ columns: ["total"], rows: [[42]] });
+    expect(() => JSON.stringify(result)).not.toThrow();
+  });
 });
