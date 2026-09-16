@@ -20,5 +20,6 @@
   ],
   "referenceSql": "SELECT avg(date_diff('day', started_at, ended_at)) AS avg_days_to_cancel FROM subscriptions WHERE status = 'canceled' AND ended_at IS NOT NULL",
   "commonWrongAnswers": [],
+  "placementEligible": false,
   "admittedAt": "2026-09-15T02:12:00.021Z"
 }

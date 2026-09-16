@@ -1,0 +1,58 @@
+{
+  "id": "ecommerce-sql_build-l4-budget-checkout-conversion-drop",
+  "domain": "ecommerce",
+  "mode": "sql_build",
+  "level": 4,
+  "questionType": "budget",
+  "skills": [
+    "validation"
+  ],
+  "title": "Investigate: checkout conversion dropped last week",
+  "prompt": "Checkout conversion dropped 15% last week. You have 10 credits to spend investigating before recommending a root cause — you don't need to buy every investigation.",
+  "population": "Checkout sessions from the last two weeks.",
+  "grain": "One recommendation.",
+  "budgetAmount": 10,
+  "investigations": [
+    {
+      "id": "payment_errors",
+      "label": "Check the payment gateway error rate",
+      "cost": 4,
+      "revealText": "Payment gateway error rate roughly doubled starting the same day the drop began."
+    },
+    {
+      "id": "traffic_mix",
+      "label": "Check traffic source mix",
+      "cost": 3,
+      "revealText": "Traffic source mix is unchanged week over week."
+    },
+    {
+      "id": "pricing_change",
+      "label": "Check for pricing or promo changes",
+      "cost": 3,
+      "revealText": "No pricing or promo changes were made that week."
+    },
+    {
+      "id": "checkout_ui",
+      "label": "Check for a recent checkout UI deploy",
+      "cost": 5,
+      "revealText": "No checkout UI deploy happened that week."
+    }
+  ],
+  "recommendationOptions": [
+    {
+      "id": "payments",
+      "label": "Escalate to the payments team — a gateway issue is likely causing failed checkouts"
+    },
+    {
+      "id": "marketing",
+      "label": "Escalate to marketing — traffic quality likely dropped"
+    },
+    {
+      "id": "pricing",
+      "label": "Escalate to pricing — a promo change likely hurt conversion"
+    }
+  ],
+  "correctRecommendationOptionId": "payments",
+  "explanation": "The payment gateway error rate spike lines up exactly with when the drop started, and nothing else changed (traffic mix, pricing, UI) — that's the cheapest investigation that already explains the drop on its own.",
+  "admittedAt": "2026-09-16T17:05:01.415Z"
+}

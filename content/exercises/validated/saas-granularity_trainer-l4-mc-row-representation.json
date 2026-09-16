@@ -1,0 +1,32 @@
+{
+  "id": "saas-granularity_trainer-l4-mc-row-representation",
+  "domain": "saas",
+  "mode": "granularity_trainer",
+  "level": 4,
+  "questionType": "multiple_choice",
+  "skills": [
+    "grain",
+    "aggregation"
+  ],
+  "title": "What does a row represent after aggregating MRR by account?",
+  "prompt": "Finance wants monthly recurring revenue by account. Subscriptions start at one row per subscription change. After building what finance asked for, what does one row of the result represent?",
+  "population": "Subscription changes for active subscriptions.",
+  "grain": "Ends at one row per account per month.",
+  "options": [
+    {
+      "id": "change_event",
+      "label": "One subscription change event"
+    },
+    {
+      "id": "account_month",
+      "label": "One account, one month"
+    },
+    {
+      "id": "account_ever",
+      "label": "One account, across its entire lifetime"
+    }
+  ],
+  "correctOptionId": "account_month",
+  "explanation": "\"Monthly\" recurring revenue by account means the result needs a row per account per month, not per raw change event and not collapsed across all months into one row per account.",
+  "admittedAt": "2026-09-16T17:05:01.412Z"
+}

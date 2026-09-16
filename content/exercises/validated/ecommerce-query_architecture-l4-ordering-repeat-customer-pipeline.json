@@ -1,0 +1,42 @@
+{
+  "id": "ecommerce-query_architecture-l4-ordering-repeat-customer-pipeline",
+  "domain": "ecommerce",
+  "mode": "query_architecture",
+  "level": 4,
+  "questionType": "ordering",
+  "skills": [
+    "filtering",
+    "aggregation",
+    "complex_pipelines"
+  ],
+  "title": "Order the pipeline: repeat customers by month",
+  "prompt": "Marketing wants, for each month, how many customers placed more than one completed order that month. Put these blocks in the order they need to run.",
+  "population": "Completed orders.",
+  "grain": "Ends at one row per month.",
+  "steps": [
+    {
+      "id": "filter",
+      "label": "Filter orders to completed ones"
+    },
+    {
+      "id": "aggregate",
+      "label": "Aggregate to one row per customer per month, counting orders"
+    },
+    {
+      "id": "filter_agg",
+      "label": "Filter those rows to where the order count is greater than 1"
+    },
+    {
+      "id": "count_customers",
+      "label": "Count the distinct customers left, per month"
+    }
+  ],
+  "correctOrder": [
+    "filter",
+    "aggregate",
+    "filter_agg",
+    "count_customers"
+  ],
+  "explanation": "You can't filter on \"order count per customer per month\" until that count exists, which means aggregating first. Filtering the aggregated rows down to repeat customers has to happen before the final count, or the count would include everyone.",
+  "admittedAt": "2026-09-16T17:05:01.414Z"
+}

@@ -805,5 +805,96 @@
       "aggregation"
     ],
     "admittedAt": "2026-09-15T02:12:00.022Z"
+  },
+  {
+    "id": "ecommerce-metric_lab-l4-mc-refund-rate-denominator",
+    "domain": "ecommerce",
+    "mode": "metric_lab",
+    "level": 4,
+    "skills": [
+      "population",
+      "denominator",
+      "metric_definition"
+    ],
+    "admittedAt": "2026-09-16T17:05:01.411Z"
+  },
+  {
+    "id": "fintech-metric_lab-l5-mc-late-payment-population",
+    "domain": "fintech",
+    "mode": "metric_lab",
+    "level": 5,
+    "skills": [
+      "population",
+      "denominator"
+    ],
+    "admittedAt": "2026-09-16T17:05:01.412Z"
+  },
+  {
+    "id": "saas-granularity_trainer-l4-mc-row-representation",
+    "domain": "saas",
+    "mode": "granularity_trainer",
+    "level": 4,
+    "skills": [
+      "grain",
+      "aggregation"
+    ],
+    "admittedAt": "2026-09-16T17:05:01.412Z"
+  },
+  {
+    "id": "fintech-granularity_trainer-l5-ordering-loan-cohort-pipeline",
+    "domain": "fintech",
+    "mode": "granularity_trainer",
+    "level": 5,
+    "skills": [
+      "grain",
+      "aggregation",
+      "joins"
+    ],
+    "admittedAt": "2026-09-16T17:05:01.413Z"
+  },
+  {
+    "id": "ecommerce-query_architecture-l4-ordering-repeat-customer-pipeline",
+    "domain": "ecommerce",
+    "mode": "query_architecture",
+    "level": 4,
+    "skills": [
+      "filtering",
+      "aggregation",
+      "complex_pipelines"
+    ],
+    "admittedAt": "2026-09-16T17:05:01.414Z"
+  },
+  {
+    "id": "saas-query_architecture-l5-ordering-expansion-mrr-pipeline",
+    "domain": "saas",
+    "mode": "query_architecture",
+    "level": 5,
+    "skills": [
+      "lag_lead",
+      "aggregation",
+      "complex_pipelines"
+    ],
+    "admittedAt": "2026-09-16T17:05:01.414Z"
+  },
+  {
+    "id": "ecommerce-sql_build-l4-budget-checkout-conversion-drop",
+    "domain": "ecommerce",
+    "mode": "sql_build",
+    "level": 4,
+    "skills": [
+      "validation"
+    ],
+    "admittedAt": "2026-09-16T17:05:01.415Z"
+  },
+  {
+    "id": "fintech-sql_build-l5-mc-window-vs-groupby",
+    "domain": "fintech",
+    "mode": "sql_build",
+    "level": 5,
+    "skills": [
+      "window_function",
+      "running_totals"
+    ],
+    "admittedAt": "2026-09-16T17:05:01.415Z"
   }
 ]

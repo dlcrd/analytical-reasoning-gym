@@ -1,0 +1,32 @@
+{
+  "id": "fintech-metric_lab-l5-mc-late-payment-population",
+  "domain": "fintech",
+  "mode": "metric_lab",
+  "level": 5,
+  "questionType": "multiple_choice",
+  "skills": [
+    "population",
+    "denominator"
+  ],
+  "title": "Population for a late payment rate",
+  "prompt": "Risk wants a \"late payment rate\" across the loan book. Which population is correct for the denominator?",
+  "population": "Payments due in the reporting period.",
+  "grain": "One rate, computed from a ratio of two counts.",
+  "options": [
+    {
+      "id": "all_statuses",
+      "label": "All payments due in the period, across every loan status"
+    },
+    {
+      "id": "active_only",
+      "label": "Payments due in the period for loans that are currently active (not closed or defaulted)"
+    },
+    {
+      "id": "late_only",
+      "label": "Only the payments that were actually late in the period"
+    }
+  ],
+  "correctOptionId": "active_only",
+  "explanation": "Closed and defaulted loans shouldn't count toward a rate meant to flag emerging risk on the current book, and using only the late payments as the denominator would make the rate always equal 100%.",
+  "admittedAt": "2026-09-16T17:05:01.412Z"
+}

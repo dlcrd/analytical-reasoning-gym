@@ -1,0 +1,42 @@
+{
+  "id": "fintech-granularity_trainer-l5-ordering-loan-cohort-pipeline",
+  "domain": "fintech",
+  "mode": "granularity_trainer",
+  "level": 5,
+  "questionType": "ordering",
+  "skills": [
+    "grain",
+    "aggregation",
+    "joins"
+  ],
+  "title": "Order the pipeline: on-time rate by loan origination cohort",
+  "prompt": "You need on-time payment rate grouped by the month each loan originated. Put these steps in the order they need to happen.",
+  "population": "Payments due in the reporting window, for loans with a known origination month.",
+  "grain": "Ends at one row per origination cohort (month).",
+  "steps": [
+    {
+      "id": "filter",
+      "label": "Filter payments to those due in the reporting window"
+    },
+    {
+      "id": "join",
+      "label": "Join payments to loans to get each loan's origination month (the cohort)"
+    },
+    {
+      "id": "aggregate",
+      "label": "Aggregate to one row per origination cohort: count on-time and total payments"
+    },
+    {
+      "id": "calculate",
+      "label": "Calculate the rate: on-time payments divided by total payments"
+    }
+  ],
+  "correctOrder": [
+    "filter",
+    "join",
+    "aggregate",
+    "calculate"
+  ],
+  "explanation": "The cohort (origination month) only exists on the loans table, so it has to be joined in before you can group by it. Grouping has to happen before dividing two aggregated counts — you can't calculate a per-cohort rate from ungrouped rows.",
+  "admittedAt": "2026-09-16T17:05:01.413Z"
+}

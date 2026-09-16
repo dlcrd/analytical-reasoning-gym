@@ -1,0 +1,32 @@
+{
+  "id": "fintech-sql_build-l5-mc-window-vs-groupby",
+  "domain": "fintech",
+  "mode": "sql_build",
+  "level": 5,
+  "questionType": "multiple_choice",
+  "skills": [
+    "window_function",
+    "running_totals"
+  ],
+  "title": "GROUP BY vs. window function for a running loan balance",
+  "prompt": "You need each loan's running total of disbursed amount over time, without collapsing its individual disbursement rows. Which approach is correct?",
+  "population": "Loan disbursements.",
+  "grain": "Keeps one row per disbursement, plus a running total column.",
+  "options": [
+    {
+      "id": "group_by",
+      "label": "GROUP BY loan_id, ORDER BY disbursed_at"
+    },
+    {
+      "id": "window",
+      "label": "SUM(amount) OVER (PARTITION BY loan_id ORDER BY disbursed_at)"
+    },
+    {
+      "id": "unpartitioned_subquery",
+      "label": "A subquery that re-runs SUM(amount) for each row with no partitioning"
+    }
+  ],
+  "correctOptionId": "window",
+  "explanation": "GROUP BY collapses rows into one per group, which loses the individual disbursement rows you need to keep. A window function with PARTITION BY/ORDER BY keeps every row while adding the running total; the unpartitioned subquery would sum across every loan instead of just the current one.",
+  "admittedAt": "2026-09-16T17:05:01.415Z"
+}

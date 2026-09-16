@@ -16,5 +16,6 @@
   "transformationPlan": null,
   "referenceSql": "SELECT date_trunc('month', issued_at) AS month, sum(amount) AS total_paid FROM invoices WHERE status = 'paid' AND issued_at >= TIMESTAMP '2025-01-01' AND issued_at < TIMESTAMP '2026-01-01' GROUP BY date_trunc('month', issued_at)",
   "commonWrongAnswers": [],
+  "placementEligible": false,
   "admittedAt": "2026-09-15T02:12:00.020Z"
 }

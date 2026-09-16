@@ -1,0 +1,42 @@
+{
+  "id": "saas-query_architecture-l5-ordering-expansion-mrr-pipeline",
+  "domain": "saas",
+  "mode": "query_architecture",
+  "level": 5,
+  "questionType": "ordering",
+  "skills": [
+    "lag_lead",
+    "aggregation",
+    "complex_pipelines"
+  ],
+  "title": "Order the pipeline: expansion MRR month over month",
+  "prompt": "Finance wants expansion MRR: for accounts whose MRR increased from the prior month, the sum of that increase, by month. Put these blocks in the order they need to run.",
+  "population": "Active subscriptions.",
+  "grain": "Ends at one row per month.",
+  "steps": [
+    {
+      "id": "aggregate",
+      "label": "Aggregate subscriptions to one row per account per month (MRR)"
+    },
+    {
+      "id": "lag",
+      "label": "Apply LAG to get each account's MRR in the prior month"
+    },
+    {
+      "id": "filter_positive",
+      "label": "Filter to rows where MRR increased versus the prior month"
+    },
+    {
+      "id": "sum_delta",
+      "label": "Sum the positive deltas by month"
+    }
+  ],
+  "correctOrder": [
+    "aggregate",
+    "lag",
+    "filter_positive",
+    "sum_delta"
+  ],
+  "explanation": "LAG needs one row per account per month to look back a month, so aggregation has to happen first. Filtering to increases only makes sense once the delta (current vs. prior) exists, and summing by month comes last.",
+  "admittedAt": "2026-09-16T17:05:01.414Z"
+}

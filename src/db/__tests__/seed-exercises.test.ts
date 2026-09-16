@@ -9,10 +9,10 @@ describe("syncExercisesIndex", () => {
     const db = await createTestDb();
 
     const result = await syncExercisesIndex(db);
-    expect(result.synced).toBe(65);
+    expect(result.synced).toBe(73);
 
     const rows = await db.select().from(exercises);
-    expect(rows).toHaveLength(65);
+    expect(rows).toHaveLength(73);
 
     const [example] = await db
       .select()
@@ -39,8 +39,8 @@ describe("syncExercisesIndex", () => {
     await syncExercisesIndex(db);
     const second = await syncExercisesIndex(db);
 
-    expect(second.synced).toBe(65);
+    expect(second.synced).toBe(73);
     const rows = await db.select().from(exercises);
-    expect(rows).toHaveLength(65);
+    expect(rows).toHaveLength(73);
   });
 });

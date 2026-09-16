@@ -1,0 +1,164 @@
+[
+  {
+    "id": "ecommerce-metric_lab-l4-mc-refund-rate-denominator",
+    "domain": "ecommerce",
+    "mode": "metric_lab",
+    "level": 4,
+    "questionType": "multiple_choice",
+    "skills": ["population", "denominator", "metric_definition"],
+    "title": "Choosing the right denominator for refund rate",
+    "prompt": "Support wants a \"refund rate\" for last quarter. Which denominator is correct?",
+    "population": "Orders placed last quarter.",
+    "grain": "One rate, computed from a ratio of two counts.",
+    "options": [
+      { "id": "all_orders", "label": "All orders placed in the quarter, including cancelled ones" },
+      { "id": "completed_orders", "label": "Completed orders placed in the quarter" },
+      { "id": "refund_requests", "label": "All refund requests submitted in the quarter" }
+    ],
+    "correctOptionId": "completed_orders",
+    "explanation": "Refund rate should measure refunds as a share of orders that could plausibly be refunded — completed orders. Including cancelled orders inflates the denominator with orders that were never fulfilled in the first place, and using refund requests as the denominator conflates the numerator's own population with itself."
+  },
+  {
+    "id": "fintech-metric_lab-l5-mc-late-payment-population",
+    "domain": "fintech",
+    "mode": "metric_lab",
+    "level": 5,
+    "questionType": "multiple_choice",
+    "skills": ["population", "denominator"],
+    "title": "Population for a late payment rate",
+    "prompt": "Risk wants a \"late payment rate\" across the loan book. Which population is correct for the denominator?",
+    "population": "Payments due in the reporting period.",
+    "grain": "One rate, computed from a ratio of two counts.",
+    "options": [
+      { "id": "all_statuses", "label": "All payments due in the period, across every loan status" },
+      { "id": "active_only", "label": "Payments due in the period for loans that are currently active (not closed or defaulted)" },
+      { "id": "late_only", "label": "Only the payments that were actually late in the period" }
+    ],
+    "correctOptionId": "active_only",
+    "explanation": "Closed and defaulted loans shouldn't count toward a rate meant to flag emerging risk on the current book, and using only the late payments as the denominator would make the rate always equal 100%."
+  },
+  {
+    "id": "saas-granularity_trainer-l4-mc-row-representation",
+    "domain": "saas",
+    "mode": "granularity_trainer",
+    "level": 4,
+    "questionType": "multiple_choice",
+    "skills": ["grain", "aggregation"],
+    "title": "What does a row represent after aggregating MRR by account?",
+    "prompt": "Finance wants monthly recurring revenue by account. Subscriptions start at one row per subscription change. After building what finance asked for, what does one row of the result represent?",
+    "population": "Subscription changes for active subscriptions.",
+    "grain": "Ends at one row per account per month.",
+    "options": [
+      { "id": "change_event", "label": "One subscription change event" },
+      { "id": "account_month", "label": "One account, one month" },
+      { "id": "account_ever", "label": "One account, across its entire lifetime" }
+    ],
+    "correctOptionId": "account_month",
+    "explanation": "\"Monthly\" recurring revenue by account means the result needs a row per account per month, not per raw change event and not collapsed across all months into one row per account."
+  },
+  {
+    "id": "fintech-granularity_trainer-l5-ordering-loan-cohort-pipeline",
+    "domain": "fintech",
+    "mode": "granularity_trainer",
+    "level": 5,
+    "questionType": "ordering",
+    "skills": ["grain", "aggregation", "joins"],
+    "title": "Order the pipeline: on-time rate by loan origination cohort",
+    "prompt": "You need on-time payment rate grouped by the month each loan originated. Put these steps in the order they need to happen.",
+    "population": "Payments due in the reporting window, for loans with a known origination month.",
+    "grain": "Ends at one row per origination cohort (month).",
+    "steps": [
+      { "id": "filter", "label": "Filter payments to those due in the reporting window" },
+      { "id": "join", "label": "Join payments to loans to get each loan's origination month (the cohort)" },
+      { "id": "aggregate", "label": "Aggregate to one row per origination cohort: count on-time and total payments" },
+      { "id": "calculate", "label": "Calculate the rate: on-time payments divided by total payments" }
+    ],
+    "correctOrder": ["filter", "join", "aggregate", "calculate"],
+    "explanation": "The cohort (origination month) only exists on the loans table, so it has to be joined in before you can group by it. Grouping has to happen before dividing two aggregated counts — you can't calculate a per-cohort rate from ungrouped rows."
+  },
+  {
+    "id": "ecommerce-query_architecture-l4-ordering-repeat-customer-pipeline",
+    "domain": "ecommerce",
+    "mode": "query_architecture",
+    "level": 4,
+    "questionType": "ordering",
+    "skills": ["filtering", "aggregation", "complex_pipelines"],
+    "title": "Order the pipeline: repeat customers by month",
+    "prompt": "Marketing wants, for each month, how many customers placed more than one completed order that month. Put these blocks in the order they need to run.",
+    "population": "Completed orders.",
+    "grain": "Ends at one row per month.",
+    "steps": [
+      { "id": "filter", "label": "Filter orders to completed ones" },
+      { "id": "aggregate", "label": "Aggregate to one row per customer per month, counting orders" },
+      { "id": "filter_agg", "label": "Filter those rows to where the order count is greater than 1" },
+      { "id": "count_customers", "label": "Count the distinct customers left, per month" }
+    ],
+    "correctOrder": ["filter", "aggregate", "filter_agg", "count_customers"],
+    "explanation": "You can't filter on \"order count per customer per month\" until that count exists, which means aggregating first. Filtering the aggregated rows down to repeat customers has to happen before the final count, or the count would include everyone."
+  },
+  {
+    "id": "saas-query_architecture-l5-ordering-expansion-mrr-pipeline",
+    "domain": "saas",
+    "mode": "query_architecture",
+    "level": 5,
+    "questionType": "ordering",
+    "skills": ["lag_lead", "aggregation", "complex_pipelines"],
+    "title": "Order the pipeline: expansion MRR month over month",
+    "prompt": "Finance wants expansion MRR: for accounts whose MRR increased from the prior month, the sum of that increase, by month. Put these blocks in the order they need to run.",
+    "population": "Active subscriptions.",
+    "grain": "Ends at one row per month.",
+    "steps": [
+      { "id": "aggregate", "label": "Aggregate subscriptions to one row per account per month (MRR)" },
+      { "id": "lag", "label": "Apply LAG to get each account's MRR in the prior month" },
+      { "id": "filter_positive", "label": "Filter to rows where MRR increased versus the prior month" },
+      { "id": "sum_delta", "label": "Sum the positive deltas by month" }
+    ],
+    "correctOrder": ["aggregate", "lag", "filter_positive", "sum_delta"],
+    "explanation": "LAG needs one row per account per month to look back a month, so aggregation has to happen first. Filtering to increases only makes sense once the delta (current vs. prior) exists, and summing by month comes last."
+  },
+  {
+    "id": "ecommerce-sql_build-l4-budget-checkout-conversion-drop",
+    "domain": "ecommerce",
+    "mode": "sql_build",
+    "level": 4,
+    "questionType": "budget",
+    "skills": ["validation"],
+    "title": "Investigate: checkout conversion dropped last week",
+    "prompt": "Checkout conversion dropped 15% last week. You have 10 credits to spend investigating before recommending a root cause — you don't need to buy every investigation.",
+    "population": "Checkout sessions from the last two weeks.",
+    "grain": "One recommendation.",
+    "budgetAmount": 10,
+    "investigations": [
+      { "id": "payment_errors", "label": "Check the payment gateway error rate", "cost": 4, "revealText": "Payment gateway error rate roughly doubled starting the same day the drop began." },
+      { "id": "traffic_mix", "label": "Check traffic source mix", "cost": 3, "revealText": "Traffic source mix is unchanged week over week." },
+      { "id": "pricing_change", "label": "Check for pricing or promo changes", "cost": 3, "revealText": "No pricing or promo changes were made that week." },
+      { "id": "checkout_ui", "label": "Check for a recent checkout UI deploy", "cost": 5, "revealText": "No checkout UI deploy happened that week." }
+    ],
+    "recommendationOptions": [
+      { "id": "payments", "label": "Escalate to the payments team — a gateway issue is likely causing failed checkouts" },
+      { "id": "marketing", "label": "Escalate to marketing — traffic quality likely dropped" },
+      { "id": "pricing", "label": "Escalate to pricing — a promo change likely hurt conversion" }
+    ],
+    "correctRecommendationOptionId": "payments",
+    "explanation": "The payment gateway error rate spike lines up exactly with when the drop started, and nothing else changed (traffic mix, pricing, UI) — that's the cheapest investigation that already explains the drop on its own."
+  },
+  {
+    "id": "fintech-sql_build-l5-mc-window-vs-groupby",
+    "domain": "fintech",
+    "mode": "sql_build",
+    "level": 5,
+    "questionType": "multiple_choice",
+    "skills": ["window_function", "running_totals"],
+    "title": "GROUP BY vs. window function for a running loan balance",
+    "prompt": "You need each loan's running total of disbursed amount over time, without collapsing its individual disbursement rows. Which approach is correct?",
+    "population": "Loan disbursements.",
+    "grain": "Keeps one row per disbursement, plus a running total column.",
+    "options": [
+      { "id": "group_by", "label": "GROUP BY loan_id, ORDER BY disbursed_at" },
+      { "id": "window", "label": "SUM(amount) OVER (PARTITION BY loan_id ORDER BY disbursed_at)" },
+      { "id": "unpartitioned_subquery", "label": "A subquery that re-runs SUM(amount) for each row with no partitioning" }
+    ],
+    "correctOptionId": "window",
+    "explanation": "GROUP BY collapses rows into one per group, which loses the individual disbursement rows you need to keep. A window function with PARTITION BY/ORDER BY keeps every row while adding the running total; the unpartitioned subquery would sum across every loan instead of just the current one."
+  }
+]

@@ -25,5 +25,6 @@
       "whyWrong": "Counts customers with EITHER a checking OR a savings account, not customers who hold both — the IN clause doesn't require both types to be present."
     }
   ],
+  "placementEligible": false,
   "admittedAt": "2026-09-15T02:01:58.617Z"
 }

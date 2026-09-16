@@ -16,5 +16,6 @@
   "transformationPlan": null,
   "referenceSql": "SELECT count(*) FILTER (WHERE status = 'failed')::DOUBLE / count(*) AS failed_rate FROM invoices WHERE issued_at >= TIMESTAMP '2024-01-01' AND issued_at < TIMESTAMP '2025-01-01'",
   "commonWrongAnswers": [],
+  "placementEligible": false,
   "admittedAt": "2026-09-15T02:01:58.825Z"
 }

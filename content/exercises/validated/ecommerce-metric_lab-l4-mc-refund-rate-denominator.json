@@ -1,0 +1,33 @@
+{
+  "id": "ecommerce-metric_lab-l4-mc-refund-rate-denominator",
+  "domain": "ecommerce",
+  "mode": "metric_lab",
+  "level": 4,
+  "questionType": "multiple_choice",
+  "skills": [
+    "population",
+    "denominator",
+    "metric_definition"
+  ],
+  "title": "Choosing the right denominator for refund rate",
+  "prompt": "Support wants a \"refund rate\" for last quarter. Which denominator is correct?",
+  "population": "Orders placed last quarter.",
+  "grain": "One rate, computed from a ratio of two counts.",
+  "options": [
+    {
+      "id": "all_orders",
+      "label": "All orders placed in the quarter, including cancelled ones"
+    },
+    {
+      "id": "completed_orders",
+      "label": "Completed orders placed in the quarter"
+    },
+    {
+      "id": "refund_requests",
+      "label": "All refund requests submitted in the quarter"
+    }
+  ],
+  "correctOptionId": "completed_orders",
+  "explanation": "Refund rate should measure refunds as a share of orders that could plausibly be refunded — completed orders. Including cancelled orders inflates the denominator with orders that were never fulfilled in the first place, and using refund requests as the denominator conflates the numerator's own population with itself.",
+  "admittedAt": "2026-09-16T17:05:01.411Z"
+}

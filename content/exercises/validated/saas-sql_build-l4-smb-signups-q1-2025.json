@@ -15,5 +15,6 @@
   "transformationPlan": null,
   "referenceSql": "SELECT count(*) FROM accounts WHERE segment = 'smb' AND signed_up_at >= DATE '2025-01-01' AND signed_up_at < DATE '2025-04-01'",
   "commonWrongAnswers": [],
+  "placementEligible": false,
   "admittedAt": "2026-09-15T02:01:58.827Z"
 }

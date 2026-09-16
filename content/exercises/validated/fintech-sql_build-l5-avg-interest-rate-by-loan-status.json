@@ -14,5 +14,6 @@
   "transformationPlan": null,
   "referenceSql": "SELECT status, avg(interest_rate) AS avg_interest_rate FROM loans GROUP BY status",
   "commonWrongAnswers": [],
+  "placementEligible": false,
   "admittedAt": "2026-09-15T02:11:59.830Z"
 }

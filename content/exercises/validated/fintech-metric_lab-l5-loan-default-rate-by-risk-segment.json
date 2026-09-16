@@ -21,5 +21,6 @@
       "whyWrong": "Returns the default count, not the rate — segments with more loans overall will look worse even if their true default rate is lower."
     }
   ],
+  "placementEligible": false,
   "admittedAt": "2026-09-15T02:01:58.616Z"
 }

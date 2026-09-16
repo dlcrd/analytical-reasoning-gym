@@ -16,5 +16,6 @@
   "transformationPlan": null,
   "referenceSql": "SELECT account_id, date_trunc('month', occurred_at) AS month, count(*) AS event_count FROM usage_events WHERE occurred_at >= TIMESTAMP '2025-01-01' AND occurred_at < TIMESTAMP '2026-01-01' GROUP BY account_id, date_trunc('month', occurred_at)",
   "commonWrongAnswers": [],
+  "placementEligible": false,
   "admittedAt": "2026-09-15T02:01:58.826Z"
 }
