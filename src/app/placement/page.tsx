@@ -1,32 +1,50 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { BudgetQuestion } from "@/components/placement/BudgetQuestion";
+import { MultipleChoiceQuestion } from "@/components/placement/MultipleChoiceQuestion";
+import { OrderingQuestion } from "@/components/placement/OrderingQuestion";
 import { SchemaPanel } from "@/components/SchemaPanel";
 import { SqlEditor } from "@/components/SqlEditor";
 import type { Domain, Mode } from "@/db/schema";
 import type { QueryResult } from "@/lib/grading";
 
-interface ExercisePreview {
+interface Option {
+  id: string;
+  label: string;
+}
+
+interface QuestionBase {
   id: string;
   mode: Mode;
   domain: Domain;
   level: number;
   title: string;
   prompt: string;
-  population: string;
-  grain: string;
-  metricDefinition: string | null;
-  transformationPlan: string[] | null;
 }
 
-interface AttemptRecord {
-  exerciseId: string;
-  isCorrect: boolean;
-  feedbackChecklist: {
-    sqlSyntax: boolean;
-    result: boolean;
-    reason?: string;
-  };
+type PlacementQuestion =
+  | (QuestionBase & {
+      questionType: "sql";
+      population: string;
+      grain: string;
+      metricDefinition: string | null;
+      transformationPlan: string[] | null;
+      expectedColumns: string[] | null;
+    })
+  | (QuestionBase & { questionType: "multiple_choice"; explanation: string; options: Option[] })
+  | (QuestionBase & { questionType: "ordering"; explanation: string; steps: Option[] })
+  | (QuestionBase & {
+      questionType: "budget";
+      explanation: string;
+      budgetAmount: number;
+      investigations: Array<{ id: string; label: string; cost: number; revealText: string }>;
+      recommendationOptions: Option[];
+    });
+
+interface Grade {
+  matches: boolean;
+  reason?: string;
 }
 
 const MODE_LABELS: Record<Mode, string> = {
@@ -42,97 +60,129 @@ const SECONDARY_BUTTON =
   "rounded-full border border-zinc-300 px-5 py-2 text-zinc-900 hover:bg-zinc-100 dark:border-zinc-600 dark:text-zinc-100 dark:hover:bg-zinc-800";
 const CARD = "rounded border border-zinc-200 dark:border-zinc-700";
 
-type Phase = "intro" | "concept" | "sql" | "graded" | "finished";
+type Phase = "loading" | "intro" | "concept" | "answer" | "graded" | "finished";
 
 export default function PlacementPage() {
-  const [phase, setPhase] = useState<Phase>("intro");
+  const [phase, setPhase] = useState<Phase>("loading");
   const [sessionId, setSessionId] = useState<string | null>(null);
-  const [exercises, setExercises] = useState<ExercisePreview[]>([]);
+  const [questions, setQuestions] = useState<PlacementQuestion[]>([]);
   const [index, setIndex] = useState(0);
-  const [attempts, setAttempts] = useState<AttemptRecord[]>([]);
   const [sql, setSql] = useState("");
   const [runResult, setRunResult] = useState<QueryResult | null>(null);
   const [runError, setRunError] = useState<string | null>(null);
   const [grading, setGrading] = useState(false);
-  const [lastGrade, setLastGrade] = useState<{ matches: boolean; reason?: string } | null>(null);
+  const [lastGrade, setLastGrade] = useState<Grade | null>(null);
   const [levelsByMode, setLevelsByMode] = useState<Record<Mode, number> | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const currentExercise = exercises[index];
+  const currentQuestion = questions[index];
+
+  useEffect(() => {
+    checkForActiveSession();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  function phaseFor(question: PlacementQuestion): Phase {
+    return question.questionType === "sql" ? "concept" : "answer";
+  }
+
+  async function checkForActiveSession() {
+    setError(null);
+    try {
+      const response = await fetch("/api/placement/active");
+      if (!response.ok) throw new Error("Falha ao verificar sessão de nivelamento em andamento.");
+      const active = (await response.json()) as {
+        sessionId: string;
+        questions: PlacementQuestion[];
+        answeredExerciseIds: string[];
+      } | null;
+
+      if (!active) {
+        setPhase("intro");
+        return;
+      }
+
+      const answered = new Set(active.answeredExerciseIds);
+      const nextIndex = active.questions.findIndex((question) => !answered.has(question.id));
+
+      setSessionId(active.sessionId);
+      setQuestions(active.questions);
+
+      if (nextIndex === -1) {
+        // Every question was answered but the session was never finalized (e.g. closed mid-way).
+        await finishTest(active.sessionId);
+        return;
+      }
+
+      setIndex(nextIndex);
+      setPhase(phaseFor(active.questions[nextIndex]));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+      setPhase("intro");
+    }
+  }
 
   async function startTest() {
     setError(null);
     try {
       const response = await fetch("/api/placement/start", { method: "POST" });
       if (!response.ok) throw new Error("Falha ao iniciar o teste de nivelamento.");
-      const data = (await response.json()) as { sessionId: string; exercises: ExercisePreview[] };
+      const data = (await response.json()) as { sessionId: string; exercises: PlacementQuestion[] };
       setSessionId(data.sessionId);
-      setExercises(data.exercises);
+      setQuestions(data.exercises);
       setIndex(0);
-      setAttempts([]);
-      setPhase("concept");
+      setPhase(phaseFor(data.exercises[0]));
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     }
   }
 
-  function goToSql() {
+  function goToAnswer() {
+    resetAnswerState();
+    setPhase("answer");
+  }
+
+  function resetAnswerState() {
     setSql("");
     setRunResult(null);
     setRunError(null);
     setLastGrade(null);
-    setPhase("sql");
   }
 
   async function runSqlAgainstDataset() {
-    if (!currentExercise) return;
+    if (!currentQuestion || currentQuestion.questionType !== "sql") return;
     setRunError(null);
     setRunResult(null);
     try {
       const { runSql } = await import("@/lib/duckdb-runner");
-      const result = await runSql(currentExercise.domain, sql);
+      const result = await runSql(currentQuestion.domain, sql);
       setRunResult(result);
     } catch (e) {
       setRunError(e instanceof Error ? e.message : String(e));
     }
   }
 
-  async function submitAnswer() {
-    if (!currentExercise) return;
+  async function recordAttempt(exerciseId: string, isCorrect: boolean, feedbackChecklist: unknown) {
+    if (!sessionId) return;
+    await fetch("/api/placement/attempt", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sessionId, exerciseId, isCorrect, feedbackChecklist }),
+    });
+  }
 
-    if (!runResult) {
-      const record: AttemptRecord = {
-        exerciseId: currentExercise.id,
-        isCorrect: false,
-        feedbackChecklist: {
-          sqlSyntax: false,
-          result: false,
-          reason: runError ?? "SQL não executado ou com erro.",
-        },
-      };
-      setAttempts((prev) => [...prev, record]);
-      setLastGrade({ matches: false, reason: record.feedbackChecklist.reason });
-      setPhase("graded");
-      return;
-    }
-
+  async function gradeAndRecord(exerciseId: string, answerBody: unknown, feedbackChecklist: unknown) {
     setGrading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/exercises/${currentExercise.id}/grade`, {
+      const response = await fetch(`/api/exercises/${exerciseId}/grade`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(runResult),
+        body: JSON.stringify(answerBody),
       });
       if (!response.ok) throw new Error("Falha ao avaliar a resposta.");
-      const grade = (await response.json()) as { matches: boolean; reason?: string };
-
-      const record: AttemptRecord = {
-        exerciseId: currentExercise.id,
-        isCorrect: grade.matches,
-        feedbackChecklist: { sqlSyntax: true, result: grade.matches, reason: grade.reason },
-      };
-      setAttempts((prev) => [...prev, record]);
+      const grade = (await response.json()) as Grade;
+      await recordAttempt(exerciseId, grade.matches, feedbackChecklist);
       setLastGrade(grade);
       setPhase("graded");
     } catch (e) {
@@ -142,21 +192,61 @@ export default function PlacementPage() {
     }
   }
 
-  async function nextExercise() {
-    const isLast = index === exercises.length - 1;
-    if (!isLast) {
-      setIndex((prev) => prev + 1);
-      setPhase("concept");
+  async function submitSqlAnswer() {
+    if (!currentQuestion || currentQuestion.questionType !== "sql") return;
+
+    if (!runResult) {
+      const reason = runError ?? "SQL não executado ou com erro.";
+      await recordAttempt(currentQuestion.id, false, { sqlSyntax: false, result: false, reason });
+      setLastGrade({ matches: false, reason });
+      setPhase("graded");
       return;
     }
 
-    if (!sessionId) return;
+    await gradeAndRecord(currentQuestion.id, { type: "sql", ...runResult }, { sqlSyntax: true });
+  }
+
+  async function submitMultipleChoice(selectedOptionId: string) {
+    if (!currentQuestion) return;
+    await gradeAndRecord(
+      currentQuestion.id,
+      { type: "multiple_choice", selectedOptionId },
+      { selectedOptionId },
+    );
+  }
+
+  async function submitOrdering(submittedOrder: string[]) {
+    if (!currentQuestion) return;
+    await gradeAndRecord(currentQuestion.id, { type: "ordering", submittedOrder }, { submittedOrder });
+  }
+
+  async function submitBudget(answer: { selectedInvestigationIds: string[]; recommendationOptionId: string }) {
+    if (!currentQuestion) return;
+    await gradeAndRecord(currentQuestion.id, { type: "budget", ...answer }, answer);
+  }
+
+  async function nextQuestion() {
+    const isLast = index === questions.length - 1;
+    if (!isLast) {
+      const next = questions[index + 1];
+      setIndex((prev) => prev + 1);
+      resetAnswerState();
+      setPhase(phaseFor(next));
+      return;
+    }
+
+    await finishTest();
+  }
+
+  async function finishTest(overrideSessionId?: string) {
+    const activeSessionId = overrideSessionId ?? sessionId;
+    if (!activeSessionId) return;
     setError(null);
     try {
       const response = await fetch("/api/placement/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sessionId, attempts }),
+        body: JSON.stringify({ sessionId: activeSessionId }),
       });
       if (!response.ok) throw new Error("Falha ao finalizar o teste de nivelamento.");
       const data = (await response.json()) as { levelsByMode: Record<Mode, number> };
@@ -177,11 +267,14 @@ export default function PlacementPage() {
         </p>
       )}
 
+      {phase === "loading" && <p className="text-zinc-500 dark:text-zinc-400">Carregando...</p>}
+
       {phase === "intro" && (
         <div className="flex flex-col gap-4">
           <p className="text-zinc-600 dark:text-zinc-300">
-            16 exercícios (2 por modo em L4, 2 por modo em L5) para definir seu nível inicial em cada um
-            dos 4 modos. Sem dicas — cada acerto conta como sem ajuda.
+            16 perguntas (SQL e formatos fechados — múltipla escolha, ordenamento, orçamento) para
+            definir seu nível inicial em cada um dos 4 modos. Sem dicas — cada acerto conta como sem
+            ajuda. Cada resposta é salva na hora, então dá pra fechar e continuar depois de onde parou.
           </p>
           <button onClick={startTest} className={PRIMARY_BUTTON}>
             Começar
@@ -189,39 +282,51 @@ export default function PlacementPage() {
         </div>
       )}
 
-      {currentExercise && phase !== "intro" && phase !== "finished" && (
+      {currentQuestion && phase !== "loading" && phase !== "intro" && phase !== "finished" && (
         <p className="text-sm text-zinc-500 dark:text-zinc-400">
-          Exercício {index + 1} de {exercises.length} — {MODE_LABELS[currentExercise.mode]} · L
-          {currentExercise.level} · {currentExercise.domain}
+          Pergunta {index + 1} de {questions.length} — {MODE_LABELS[currentQuestion.mode]} · L
+          {currentQuestion.level} · {currentQuestion.domain}
         </p>
       )}
 
-      {phase === "concept" && currentExercise && (
+      {phase === "concept" && currentQuestion && currentQuestion.questionType === "sql" && (
         <div className="flex flex-col gap-4">
-          <h2 className="text-lg font-medium text-zinc-900 dark:text-zinc-50">{currentExercise.title}</h2>
-          <p className="whitespace-pre-wrap text-zinc-800 dark:text-zinc-100">{currentExercise.prompt}</p>
+          <h2 className="text-lg font-medium text-zinc-900 dark:text-zinc-50">{currentQuestion.title}</h2>
+          <p className="whitespace-pre-wrap text-zinc-800 dark:text-zinc-100">{currentQuestion.prompt}</p>
           <p className="text-sm text-zinc-500 dark:text-zinc-400">
             Antes de escrever SQL, pense: qual é a população, a grain e a definição da métrica desta
             pergunta? Não há campo pra digitar isso — é só pra você organizar o raciocínio antes de
             codar.
           </p>
-          <button onClick={goToSql} className={PRIMARY_BUTTON}>
+          <button onClick={goToAnswer} className={PRIMARY_BUTTON}>
             Continuar para SQL
           </button>
         </div>
       )}
 
-      {phase === "sql" && currentExercise && (
+      {phase === "answer" && currentQuestion && currentQuestion.questionType === "sql" && (
         <div className="flex flex-col gap-4">
-          <h2 className="text-lg font-medium text-zinc-900 dark:text-zinc-50">{currentExercise.title}</h2>
-          <p className="whitespace-pre-wrap text-zinc-800 dark:text-zinc-100">{currentExercise.prompt}</p>
-          <SchemaPanel domain={currentExercise.domain} />
+          <h2 className="text-lg font-medium text-zinc-900 dark:text-zinc-50">{currentQuestion.title}</h2>
+          <p className="whitespace-pre-wrap text-zinc-800 dark:text-zinc-100">{currentQuestion.prompt}</p>
+          <SchemaPanel domain={currentQuestion.domain} />
+          {currentQuestion.expectedColumns && (
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              Formato de saída esperado: colunas{" "}
+              {currentQuestion.expectedColumns.map((col, i) => (
+                <span key={col}>
+                  {i > 0 && ", "}
+                  <code className="rounded bg-zinc-100 px-1 py-0.5 dark:bg-zinc-800">{col}</code>
+                </span>
+              ))}{" "}
+              (nomes flexíveis, mas essa é a forma esperada).
+            </p>
+          )}
           <SqlEditor value={sql} onChange={setSql} placeholder={`SELECT ...\nFROM ...`} />
           <div className="flex gap-3">
             <button onClick={runSqlAgainstDataset} className={SECONDARY_BUTTON}>
               Rodar
             </button>
-            <button onClick={submitAnswer} disabled={grading} className={PRIMARY_BUTTON}>
+            <button onClick={submitSqlAnswer} disabled={grading} className={PRIMARY_BUTTON}>
               {grading ? "Avaliando..." : "Enviar resposta"}
             </button>
           </div>
@@ -261,7 +366,34 @@ export default function PlacementPage() {
         </div>
       )}
 
-      {phase === "graded" && currentExercise && lastGrade && (
+      {phase === "answer" && currentQuestion && currentQuestion.questionType !== "sql" && (
+        <div className="flex flex-col gap-4">
+          <h2 className="text-lg font-medium text-zinc-900 dark:text-zinc-50">{currentQuestion.title}</h2>
+          <p className="whitespace-pre-wrap text-zinc-800 dark:text-zinc-100">{currentQuestion.prompt}</p>
+
+          {currentQuestion.questionType === "multiple_choice" && (
+            <MultipleChoiceQuestion
+              options={currentQuestion.options}
+              onSubmit={submitMultipleChoice}
+              submitting={grading}
+            />
+          )}
+          {currentQuestion.questionType === "ordering" && (
+            <OrderingQuestion steps={currentQuestion.steps} onSubmit={submitOrdering} submitting={grading} />
+          )}
+          {currentQuestion.questionType === "budget" && (
+            <BudgetQuestion
+              budgetAmount={currentQuestion.budgetAmount}
+              investigations={currentQuestion.investigations}
+              recommendationOptions={currentQuestion.recommendationOptions}
+              onSubmit={submitBudget}
+              submitting={grading}
+            />
+          )}
+        </div>
+      )}
+
+      {phase === "graded" && currentQuestion && lastGrade && (
         <div className="flex flex-col gap-4">
           <p
             className={`rounded px-3 py-2 text-sm ${
@@ -273,27 +405,27 @@ export default function PlacementPage() {
             {lastGrade.matches ? "Resultado correto." : `Resultado incorreto. ${lastGrade.reason ?? ""}`}
           </p>
 
-          {!lastGrade.matches && (
+          {!lastGrade.matches && currentQuestion.questionType === "sql" && (
             <div className={`flex flex-col gap-2 p-4 text-sm text-zinc-800 dark:text-zinc-100 ${CARD}`}>
               <p>
                 <span className="font-medium text-zinc-900 dark:text-zinc-50">Population: </span>
-                {currentExercise.population}
+                {currentQuestion.population}
               </p>
               <p>
                 <span className="font-medium text-zinc-900 dark:text-zinc-50">Grain: </span>
-                {currentExercise.grain}
+                {currentQuestion.grain}
               </p>
-              {currentExercise.metricDefinition && (
+              {currentQuestion.metricDefinition && (
                 <p>
                   <span className="font-medium text-zinc-900 dark:text-zinc-50">Metric Definition: </span>
-                  {currentExercise.metricDefinition}
+                  {currentQuestion.metricDefinition}
                 </p>
               )}
-              {currentExercise.transformationPlan && (
+              {currentQuestion.transformationPlan && (
                 <div>
                   <span className="font-medium text-zinc-900 dark:text-zinc-50">Transformation Plan:</span>
                   <ol className="ml-5 list-decimal">
-                    {currentExercise.transformationPlan.map((step, i) => (
+                    {currentQuestion.transformationPlan.map((step, i) => (
                       <li key={i}>{step}</li>
                     ))}
                   </ol>
@@ -305,8 +437,14 @@ export default function PlacementPage() {
             </div>
           )}
 
-          <button onClick={nextExercise} className={PRIMARY_BUTTON}>
-            {index === exercises.length - 1 ? "Finalizar teste" : "Próximo exercício"}
+          {!lastGrade.matches && currentQuestion.questionType !== "sql" && (
+            <div className={`flex flex-col gap-2 p-4 text-sm text-zinc-800 dark:text-zinc-100 ${CARD}`}>
+              <p>{currentQuestion.explanation}</p>
+            </div>
+          )}
+
+          <button onClick={nextQuestion} className={PRIMARY_BUTTON}>
+            {index === questions.length - 1 ? "Finalizar teste" : "Próxima pergunta"}
           </button>
         </div>
       )}

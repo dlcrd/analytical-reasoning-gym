@@ -3,6 +3,8 @@ import { describe, expect, it } from "vitest";
 import { attempts, modeProgress, sessions } from "@/db/schema";
 import { createTestDb } from "@/db/__tests__/test-db";
 import { syncExercisesIndex } from "@/db/seed-exercises";
+import { exerciseAuthoringSchema } from "../../../scripts/exercises/exercise-schema";
+import type { ValidatedExercise } from "../exercises";
 import {
   completePlacementSession,
   getActivePlacementSession,
@@ -10,7 +12,114 @@ import {
   recordPracticeAttempt,
   startPlacementSession,
   startPracticeSession,
+  toPlacementPreview,
 } from "../sessions";
+
+/** Builds a fully-shaped ValidatedExercise fixture (schema defaults filled in) for toPlacementPreview tests. */
+function fixture(overrides: Record<string, unknown>): ValidatedExercise {
+  return {
+    ...exerciseAuthoringSchema.parse({
+      id: "ecommerce-metric_lab-l4-mc-numerator",
+      domain: "ecommerce",
+      mode: "metric_lab",
+      level: 4,
+      skills: ["metric_definition"],
+      title: "Pick the right numerator",
+      prompt: "...",
+      population: "...",
+      grain: "...",
+      ...overrides,
+    }),
+    admittedAt: new Date().toISOString(),
+  };
+}
+
+describe("toPlacementPreview", () => {
+  it("never leaks correctOptionId for a multiple_choice question", async () => {
+    const preview = await toPlacementPreview(
+      fixture({
+        questionType: "multiple_choice",
+        explanation: "Because...",
+        options: [
+          { id: "a", label: "Completed orders only" },
+          { id: "b", label: "All orders" },
+        ],
+        correctOptionId: "b",
+      }),
+    );
+
+    expect(preview.questionType).toBe("multiple_choice");
+    expect(preview).not.toHaveProperty("correctOptionId");
+    if (preview.questionType === "multiple_choice") {
+      expect(preview.options).toEqual([
+        { id: "a", label: "Completed orders only" },
+        { id: "b", label: "All orders" },
+      ]);
+    }
+  });
+
+  it("shuffles ordering steps and never leaks correctOrder", async () => {
+    const correctOrder = ["filter", "aggregate", "window"];
+    const steps = [
+      { id: "filter", label: "Filter" },
+      { id: "aggregate", label: "Aggregate" },
+      { id: "window", label: "Window" },
+    ];
+
+    const preview = await toPlacementPreview(
+      fixture({
+        questionType: "ordering",
+        explanation: "Because...",
+        steps,
+        correctOrder,
+      }),
+    );
+
+    expect(preview.questionType).toBe("ordering");
+    expect(preview).not.toHaveProperty("correctOrder");
+    if (preview.questionType === "ordering") {
+      expect(preview.steps.map((s) => s.id).sort()).toEqual([...correctOrder].sort());
+    }
+  });
+
+  it("never leaks correctRecommendationOptionId for a budget question", async () => {
+    const preview = await toPlacementPreview(
+      fixture({
+        questionType: "budget",
+        explanation: "Because...",
+        budgetAmount: 10,
+        investigations: [{ id: "reason_codes", label: "Check reason codes", cost: 3, revealText: "..." }],
+        recommendationOptions: [
+          { id: "defect", label: "Escalate to product quality" },
+          { id: "pricing", label: "Escalate to pricing" },
+        ],
+        correctRecommendationOptionId: "defect",
+      }),
+    );
+
+    expect(preview.questionType).toBe("budget");
+    expect(preview).not.toHaveProperty("correctRecommendationOptionId");
+    if (preview.questionType === "budget") {
+      expect(preview.budgetAmount).toBe(10);
+      expect(preview.investigations).toHaveLength(1);
+    }
+  });
+
+  it("still includes expectedColumns for a sql question", async () => {
+    const preview = await toPlacementPreview(
+      fixture({
+        id: "ecommerce-sql_build-l3-marketplace-completed-orders",
+        mode: "sql_build",
+        referenceSql: "select count(*) as n from orders",
+      }),
+    );
+
+    expect(preview.questionType).toBe("sql");
+    if (preview.questionType === "sql") {
+      expect(preview.expectedColumns).not.toBeNull();
+    }
+  });
+});
 
 describe("startPlacementSession", () => {
   it("creates a placement session and returns all 16 L4/L5 exercises without the reference SQL", async () => {
@@ -34,7 +143,9 @@ describe("startPlacementSession", () => {
     const { exercises } = await startPlacementSession(db);
 
     expect(exercises.length).toBeGreaterThan(0);
-    for (const exercise of exercises) {
+    const sqlExercises = exercises.filter((exercise) => exercise.questionType === "sql");
+    expect(sqlExercises.length).toBeGreaterThan(0);
+    for (const exercise of sqlExercises) {
       expect(exercise.expectedColumns).not.toBeNull();
       expect(exercise.expectedColumns!.length).toBeGreaterThan(0);
     }

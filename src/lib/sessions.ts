@@ -2,7 +2,12 @@ import { and, desc, eq, isNull } from "drizzle-orm";
 import type { Db } from "@/db/client";
 import type { Domain, Mode } from "@/db/schema";
 import { attempts, modeProgress, modeValues, sessions } from "@/db/schema";
-import { getExerciseById, getExercisesByModeAndLevel, getPlacementTestQuestions } from "./exercises";
+import {
+  getExerciseById,
+  getExercisesByModeAndLevel,
+  getPlacementTestQuestions,
+  type ValidatedExercise,
+} from "./exercises";
 import { derivePlacementLevel, type PlacementTally } from "./placement";
 import { nextPracticeProgress } from "./practice";
 import { computeReferenceResult } from "./server-grading";
@@ -66,9 +71,124 @@ function pickRandom<T>(items: T[]): T | null {
   return items[Math.floor(Math.random() * items.length)];
 }
 
+interface PlacementQuestionBase {
+  id: string;
+  mode: Mode;
+  domain: Domain;
+  level: number;
+  title: string;
+  prompt: string;
+}
+
+interface Option {
+  id: string;
+  label: string;
+}
+
+/**
+ * What the Placement Test UI gets per question — a discriminated union so each closed format
+ * (multiple_choice/ordering/budget) only carries the fields it needs, and never the correct
+ * answer (correctOptionId/correctOrder/correctRecommendationOptionId stay server-side only).
+ */
+export type PlacementQuestionPreview =
+  | (PlacementQuestionBase & {
+      questionType: "sql";
+      population: string;
+      grain: string;
+      metricDefinition: string | null;
+      transformationPlan: string[] | null;
+      expectedColumns: string[] | null;
+    })
+  | (PlacementQuestionBase & {
+      questionType: "multiple_choice";
+      explanation: string;
+      options: Option[];
+    })
+  | (PlacementQuestionBase & {
+      questionType: "ordering";
+      explanation: string;
+      steps: Option[];
+    })
+  | (PlacementQuestionBase & {
+      questionType: "budget";
+      explanation: string;
+      budgetAmount: number;
+      investigations: Array<{ id: string; label: string; cost: number; revealText: string }>;
+      recommendationOptions: Option[];
+    });
+
+function shuffle<T>(items: T[]): T[] {
+  const shuffled = [...items];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
+/** Shuffles steps, retrying (bounded) on the rare chance it lands on the answer key itself. */
+function shuffleSteps(steps: Option[], correctOrder: string[]): Option[] {
+  let attempt = shuffle(steps);
+  for (let i = 0; i < 10 && attempt.every((step, idx) => step.id === correctOrder[idx]); i++) {
+    attempt = shuffle(steps);
+  }
+  return attempt;
+}
+
+/**
+ * Builds the client-safe preview for one Placement Test question, dispatching by questionType.
+ * Never includes referenceSql, commonWrongAnswers, or any of the correct-answer fields.
+ */
+export async function toPlacementPreview(exercise: ValidatedExercise): Promise<PlacementQuestionPreview> {
+  const base: PlacementQuestionBase = {
+    id: exercise.id,
+    mode: exercise.mode,
+    domain: exercise.domain,
+    level: exercise.level,
+    title: exercise.title,
+    prompt: exercise.prompt,
+  };
+
+  switch (exercise.questionType) {
+    case "multiple_choice":
+      return {
+        ...base,
+        questionType: "multiple_choice",
+        explanation: exercise.explanation!,
+        options: exercise.options!,
+      };
+    case "ordering":
+      return {
+        ...base,
+        questionType: "ordering",
+        explanation: exercise.explanation!,
+        steps: shuffleSteps(exercise.steps!, exercise.correctOrder!),
+      };
+    case "budget":
+      return {
+        ...base,
+        questionType: "budget",
+        explanation: exercise.explanation!,
+        budgetAmount: exercise.budgetAmount!,
+        investigations: exercise.investigations!,
+        recommendationOptions: exercise.recommendationOptions!,
+      };
+    default: {
+      const sqlPreview = await toPreview({
+        ...base,
+        population: exercise.population!,
+        grain: exercise.grain!,
+        metricDefinition: exercise.metricDefinition ?? null,
+        transformationPlan: exercise.transformationPlan ?? null,
+      });
+      return { ...sqlPreview, questionType: "sql" };
+    }
+  }
+}
+
 export interface StartPlacementSessionResult {
   sessionId: string;
-  exercises: ExercisePreview[];
+  exercises: PlacementQuestionPreview[];
 }
 
 /** Starts the one-time Placement Test: a new Session plus every eligible L4/L5 question, in a stable order. */
@@ -78,7 +198,7 @@ export async function startPlacementSession(db: Db): Promise<StartPlacementSessi
 
   return {
     sessionId: session.id,
-    exercises: await Promise.all(allExercises.map(toPreview)),
+    exercises: await Promise.all(allExercises.map(toPlacementPreview)),
   };
 }
 
@@ -151,7 +271,7 @@ export async function completePlacementSession(db: Db, sessionId: string): Promi
 
 export interface ActivePlacementSession {
   sessionId: string;
-  questions: ExercisePreview[];
+  questions: PlacementQuestionPreview[];
   answeredExerciseIds: string[];
 }
 
@@ -175,7 +295,7 @@ export async function getActivePlacementSession(db: Db): Promise<ActivePlacement
 
   return {
     sessionId: session.id,
-    questions: await Promise.all(allExercises.map(toPreview)),
+    questions: await Promise.all(allExercises.map(toPlacementPreview)),
     answeredExerciseIds: storedAttempts.map((attempt) => attempt.exerciseId),
   };
 }
