@@ -43,6 +43,7 @@ export async function syncExercisesIndex(db: Db): Promise<SyncResult> {
       mode: exercise.mode,
       domainId,
       level: exercise.level,
+      questionType: exercise.questionType,
       title: exercise.title,
       prompt: exercise.prompt,
       referenceSql: exercise.referenceSql,

@@ -29,6 +29,11 @@ export type Mode = (typeof modeValues)[number];
 export const sessionTypeValues = ["placement", "practice"] as const;
 export const sessionTypeEnum = pgEnum("session_type", sessionTypeValues);
 
+/** "sql" is the only type Practice Mode serves; the other 3 are Placement Test-only (see scripts/exercises/exercise-schema.ts). */
+export const questionTypeValues = ["sql", "multiple_choice", "ordering", "budget"] as const;
+export const questionTypeEnum = pgEnum("question_type", questionTypeValues);
+export type QuestionType = (typeof questionTypeValues)[number];
+
 export const domains = pgTable("domains", {
   id: uuid().primaryKey().defaultRandom(),
   slug: domainSlugEnum().notNull().unique(),
@@ -61,9 +66,11 @@ export const exercises = pgTable(
       .notNull()
       .references(() => domains.id),
     level: integer().notNull(),
+    questionType: questionTypeEnum().notNull().default("sql"),
     title: text().notNull(),
     prompt: text().notNull(),
-    referenceSql: text().notNull(),
+    /** Null for non-"sql" questionTypes — those have no reference SQL to run/compare. */
+    referenceSql: text(),
     validatedAt: timestamp(),
     createdAt: timestamp().notNull().defaultNow(),
   },

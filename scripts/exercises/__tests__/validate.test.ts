@@ -63,4 +63,27 @@ describe("validateExercises", () => {
     expect(result.valid).toBe(false);
     expect(result.errors.join(" ")).toMatch(/already admitted/i);
   });
+
+  it("admits a non-sql exercise without running anything against the dataset", async () => {
+    const { referenceSql: _referenceSql, ...rest } = baseExercise();
+    const [result] = await validateExercises(
+      [
+        {
+          ...rest,
+          id: "ecommerce-metric_lab-l4-mc-numerator",
+          questionType: "multiple_choice",
+          explanation: "Because the denominator must include cancelled orders too.",
+          options: [
+            { id: "a", label: "Completed orders only" },
+            { id: "b", label: "All orders regardless of status" },
+          ],
+          correctOptionId: "b",
+        },
+      ],
+      // A bogus datasetsRoot proves this path never touches the filesystem/DuckDB for non-sql types.
+      { datasetsRoot: path.join(process.cwd(), "does-not-exist") },
+    );
+    expect(result.valid).toBe(true);
+    expect(result.errors).toEqual([]);
+  });
 });

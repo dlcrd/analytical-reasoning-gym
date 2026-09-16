@@ -2,7 +2,7 @@ import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import type { Mode } from "@/db/schema";
 import { modeValues } from "@/db/schema";
-import type { ExerciseAuthoring } from "../../scripts/exercises/exercise-schema";
+import { exerciseAuthoringSchema, type ExerciseAuthoring } from "../../scripts/exercises/exercise-schema";
 
 export interface ValidatedExercise extends ExerciseAuthoring {
   admittedAt: string;
@@ -21,8 +21,13 @@ async function loadAllExercises(): Promise<ValidatedExercise[]> {
   const files = (await readdir(VALIDATED_DIR)).filter((f) => f.endsWith(".json"));
   cache = await Promise.all(
     files.map(async (file) => {
-      const raw = await readFile(path.join(VALIDATED_DIR, file), "utf-8");
-      return JSON.parse(raw) as ValidatedExercise;
+      const raw = JSON.parse(await readFile(path.join(VALIDATED_DIR, file), "utf-8")) as {
+        admittedAt: string;
+      };
+      // Parsed (not just JSON.parse'd) so questionType/placementEligible defaults apply
+      // consistently even to content files authored before those fields existed.
+      const { admittedAt, ...candidate } = raw;
+      return { ...exerciseAuthoringSchema.parse(candidate), admittedAt };
     }),
   );
   return cache;
@@ -32,12 +37,15 @@ export async function getAllExercises(): Promise<ValidatedExercise[]> {
   return loadAllExercises();
 }
 
+/** Practice Mode only ever serves SQL-writing exercises — the other questionTypes are Placement Test-only. */
 export async function getExercisesByModeAndLevel(
   mode: Mode,
   level: number,
 ): Promise<ValidatedExercise[]> {
   const all = await loadAllExercises();
-  return all.filter((exercise) => exercise.mode === mode && exercise.level === level);
+  return all.filter(
+    (exercise) => exercise.mode === mode && exercise.level === level && exercise.questionType === "sql",
+  );
 }
 
 export async function getExerciseById(id: string): Promise<ValidatedExercise | undefined> {

@@ -77,9 +77,11 @@ export async function validateExercises(
     }
     seenIds.add(exercise.id);
 
-    const sqlError = await runReferenceSql(exercise.domain, exercise.referenceSql, options.datasetsRoot);
-    if (sqlError) {
-      errors.push(`reference SQL failed: ${sqlError}`);
+    if (exercise.questionType === "sql") {
+      const sqlError = await runReferenceSql(exercise.domain, exercise.referenceSql!, options.datasetsRoot);
+      if (sqlError) {
+        errors.push(`reference SQL failed: ${sqlError}`);
+      }
     }
 
     results.push({ id: exercise.id, valid: errors.length === 0, errors });

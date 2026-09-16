@@ -21,6 +21,11 @@ describe("getExercisesByModeAndLevel", () => {
     const results = await getExercisesByModeAndLevel("sql_build", 1);
     expect(results).toEqual([]);
   });
+
+  it("only returns sql questionType exercises — Practice Mode has no UI for the closed formats", async () => {
+    const results = await getExercisesByModeAndLevel("sql_build", 5);
+    expect(results.every((exercise) => exercise.questionType === "sql")).toBe(true);
+  });
 });
 
 describe("getExerciseById", () => {

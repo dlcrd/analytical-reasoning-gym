@@ -21,6 +21,7 @@ describe("syncExercisesIndex", () => {
     expect(example.mode).toBe("sql_build");
     expect(example.level).toBe(3);
     expect(example.referenceSql).toContain("orders");
+    expect(example.questionType).toBe("sql");
 
     const taggedSkills = await db
       .select()

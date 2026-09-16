@@ -76,6 +76,41 @@ describe("exercises", () => {
     const rows = await db.select().from(exercises);
     expect(rows).toHaveLength(2);
   });
+
+  it("defaults questionType to sql and accepts a non-sql exercise with no referenceSql", async () => {
+    const db = await createTestDb();
+    const domain = await seedDomain(db);
+
+    const [sqlExercise] = await db
+      .insert(exercises)
+      .values({
+        id: "ecommerce-sql_build-l3-default-type",
+        mode: "sql_build",
+        domainId: domain.id,
+        level: 3,
+        title: "Default question type",
+        prompt: "...",
+        referenceSql: "select 1",
+      })
+      .returning();
+    expect(sqlExercise.questionType).toBe("sql");
+
+    const [closedExercise] = await db
+      .insert(exercises)
+      .values({
+        id: "ecommerce-metric_lab-l4-mc-numerator",
+        mode: "metric_lab",
+        domainId: domain.id,
+        level: 4,
+        questionType: "multiple_choice",
+        title: "Pick the right numerator",
+        prompt: "...",
+        referenceSql: null,
+      })
+      .returning();
+    expect(closedExercise.questionType).toBe("multiple_choice");
+    expect(closedExercise.referenceSql).toBeNull();
+  });
 });
 
 describe("exercise_skills", () => {

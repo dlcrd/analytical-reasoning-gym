@@ -43,6 +43,9 @@ export async function computeReferenceResult(exerciseId: string): Promise<QueryR
   if (!exercise) {
     throw new Error(`computeReferenceResult: unknown exercise "${exerciseId}"`);
   }
+  if (!exercise.referenceSql) {
+    throw new Error(`computeReferenceResult: exercise "${exerciseId}" has no referenceSql (questionType: ${exercise.questionType})`);
+  }
   return runSqlServerSide(exercise.domain, exercise.referenceSql);
 }
 
